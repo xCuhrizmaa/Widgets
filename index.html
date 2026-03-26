@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont;
 }
 
-/* 🔥 PERFECT TICKER */
+/* TICKER */
 .ticker {
   width: 100%;
   overflow: hidden;
@@ -20,16 +21,26 @@ body {
   padding: 8px 0;
 }
 
-.ticker-content {
-  display: inline-block;
-  white-space: nowrap;
-  animation: scrollTicker 18s linear infinite;
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: scrollTicker 20s linear infinite;
   font-size: 13px;
+  white-space: nowrap;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
 }
 
 @keyframes scrollTicker {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
+}
+
+.ticker-item {
+  margin-right: 40px;
+  flex-shrink: 0;
 }
 
 .header { padding: 15px; border-bottom: 1px solid #222; }
@@ -95,8 +106,12 @@ body {
 </head>
 <body>
 
+<!-- TICKER -->
+
 <div class="ticker">
-  <div id="tickerContent" class="ticker-content">Loading...</div>
+  <div id="tickerTrack" class="ticker-track">
+    <span class="ticker-item" style="color:#888">Loading market data...</span>
+  </div>
 </div>
 
 <div class="header">
@@ -120,8 +135,7 @@ body {
 
 let expanded = null;
 let cryptoCache = null;
-let tickerCache = "";
-let hasLoadedOnce = false;
+let lastTickerKey = "";
 
 // FORMAT
 function formatPrice(p) {
@@ -143,46 +157,46 @@ function getConfidence(change) {
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
-// 🔥 FIXED TICKER (SEAMLESS + NO RESET)
+// TICKER — seamless loop, only re-renders when prices actually change
 function updateTicker() {
   if (!cryptoCache) return;
 
   const items = [
-    { name: "BTC", data: cryptoCache.bitcoin },
+    { name: "BTC",  data: cryptoCache.bitcoin },
     { name: "HBAR", data: cryptoCache["hedera-hashgraph"] },
-    { name: "XRP", data: cryptoCache.ripple },
+    { name: "XRP",  data: cryptoCache.ripple },
     { name: "LINK", data: cryptoCache.chainlink },
-    { name: "SOL", data: cryptoCache.solana }
+    { name: "SOL",  data: cryptoCache.solana }
   ];
 
-  let html = "";
+  // Only re-render if prices actually changed — prevents animation reset
+  const key = items
+    .map(i => i.data ? `${i.name}:${i.data.usd}:${i.data.usd_24h_change}` : "")
+    .join("|");
 
+  if (key === lastTickerKey) return;
+  lastTickerKey = key;
+
+  let itemsHtml = "";
   items.forEach(({ name, data: d }) => {
     if (!d) return;
-
     const change = d.usd_24h_change;
     const arrow = change >= 0 ? "▲" : "▼";
     const color = change >= 0 ? "#00ff88" : "#ff4d4d";
-
-    html += `
-      <span style="margin-right:40px">
-        ${name} $${formatPrice(d.usd)}
-        <span style="color:${color}">
-          ${arrow} ${Math.abs(change).toFixed(2)}%
-        </span>
+    itemsHtml += `
+      <span class="ticker-item">
+        <span style="color:#ccc">${name}</span>
+        $${formatPrice(d.usd)}
+        <span style="color:${color}">${arrow} ${Math.abs(change).toFixed(2)}%</span>
       </span>
     `;
   });
 
-  const full = html + html;
-
-  if (full !== tickerCache) {
-    tickerCache = full;
-    document.getElementById("tickerContent").innerHTML = full;
-  }
+  // Duplicate for seamless loop — animation goes 0% to -50%
+  document.getElementById("tickerTrack").innerHTML = itemsHtml + itemsHtml;
 }
 
-// EXPAND
+// EXPAND — only re-renders the visible tab
 function toggleExpand(symbol) {
   expanded = expanded === symbol ? null : symbol;
 
@@ -199,11 +213,11 @@ function renderCrypto() {
   if (!cryptoCache) return;
 
   const map = {
-    BTC:  { data: cryptoCache.bitcoin, tvSymbol: "BTCUSD" },
+    BTC:  { data: cryptoCache.bitcoin,            tvSymbol: "BTCUSD" },
     HBAR: { data: cryptoCache["hedera-hashgraph"], tvSymbol: "HBARUSD" },
-    XRP:  { data: cryptoCache.ripple, tvSymbol: "XRPUSD" },
-    LINK: { data: cryptoCache.chainlink, tvSymbol: "LINKUSD" },
-    SOL:  { data: cryptoCache.solana, tvSymbol: "SOLUSD" }
+    XRP:  { data: cryptoCache.ripple,             tvSymbol: "XRPUSD" },
+    LINK: { data: cryptoCache.chainlink,          tvSymbol: "LINKUSD" },
+    SOL:  { data: cryptoCache.solana,             tvSymbol: "SOLUSD" }
   };
 
   let html = "";
@@ -211,6 +225,10 @@ function renderCrypto() {
   Object.entries(map).forEach(([symbol, { data: d, tvSymbol }]) => {
     if (!d) return;
 
+    const insight = getInsight(d.usd_24h_change);
+    const confidence = getConfidence(d.usd_24h_change);
+    const color = confidence > 70 ? "green" : confidence > 40 ? "yellow" : "red";
+    const changeColor = d.usd_24h_change >= 0 ? "green" : "red";
     const isExpanded = expanded === symbol;
 
     const tvParams = encodeURIComponent(JSON.stringify({
@@ -225,12 +243,19 @@ function renderCrypto() {
       <div class="card" onclick="toggleExpand('${symbol}')">
         <div class="row">
           <div>${symbol}</div>
-          <div>$${formatPrice(d.usd)}</div>
+          <div style="text-align:right">
+            $${formatPrice(d.usd)}<br>
+            <span class="${changeColor}">${d.usd_24h_change.toFixed(2)}%</span>
+          </div>
         </div>
-
+        <div class="ai">${insight}</div>
+        <div class="confidence ${color}">Confidence: ${confidence}%</div>
         ${isExpanded ? `
           <div class="chart-container">
-            <iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${tvParams}"></iframe>
+            <iframe
+              src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${tvParams}"
+              style="width:100%;height:100%;border:none;"
+            ></iframe>
           </div>
         ` : ""}
       </div>
@@ -240,55 +265,115 @@ function renderCrypto() {
   el.innerHTML = html;
 }
 
-// STOCKS
+// RENDER STOCKS
 function renderStocks() {
   const el = document.getElementById("stocks");
 
-  const stocks = ["AMD","NVDA","SOFI","SCHD","HOOD"];
+  const stocks = [
+    { symbol: "AMD",  tvSymbol: "NASDAQ:AMD" },
+    { symbol: "NVDA", tvSymbol: "NASDAQ:NVDA" },
+    { symbol: "SOFI", tvSymbol: "NASDAQ:SOFI" },
+    { symbol: "SCHD", tvSymbol: "AMEX:SCHD" },
+    { symbol: "HOOD", tvSymbol: "NASDAQ:HOOD" }
+  ];
 
-  el.innerHTML = stocks.map(s => `<div class="card">${s}</div>`).join("");
+  let html = "";
+
+  stocks.forEach(({ symbol, tvSymbol }) => {
+    const isExpanded = expanded === symbol;
+
+    const tvParams = encodeURIComponent(JSON.stringify({
+      symbol: tvSymbol,
+      dateRange: "1D",
+      colorTheme: "dark",
+      isTransparent: true,
+      autosize: true
+    }));
+
+    html += `
+      <div class="card" onclick="toggleExpand('${symbol}')">
+        <div class="row">
+          <div>${symbol}</div>
+          <div style="color:#888;font-size:12px;">Tap to expand</div>
+        </div>
+        ${isExpanded ? `
+          <div class="chart-container">
+            <iframe
+              src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${tvParams}"
+              style="width:100%;height:100%;border:none;"
+            ></iframe>
+          </div>
+        ` : ""}
+      </div>
+    `;
+  });
+
+  el.innerHTML = html;
 }
 
-// MARKET + FEAR unchanged
+// MARKET
 async function loadMarket() {
   try {
     const res = await fetch("/market");
     const d = await res.json();
+
     document.getElementById("marketCap").textContent =
       "$" + (d.data.total_market_cap.usd / 1e12).toFixed(2) + "T";
-  } catch {}
+
+    const change = d.data.market_cap_change_percentage_24h_usd;
+    const changeEl = document.getElementById("marketChange");
+    changeEl.textContent = change.toFixed(2) + "%";
+    changeEl.className = "value " + (change >= 0 ? "green" : "red");
+
+    document.getElementById("btcDom").textContent =
+      d.data.market_cap_percentage.btc.toFixed(1) + "%";
+
+  } catch {
+    document.getElementById("marketCap").textContent = "Unavailable";
+  }
 }
 
+// FEAR
 async function loadFear() {
   try {
     const r = await fetch("https://api.alternative.me/fng/");
     const d = await r.json();
-    document.getElementById("fearValue").textContent = d.data[0].value;
-  } catch {}
+    document.getElementById("fearValue").textContent =
+      d.data[0].value + " – " + d.data[0].value_classification;
+  } catch {
+    document.getElementById("fearValue").textContent = "--";
+  }
 }
 
-// CRYPTO (NO FLASH)
+// CRYPTO — no Loading flash on background refresh cycles
 async function loadCrypto() {
   const el = document.getElementById("crypto");
 
-  if (!hasLoadedOnce) {
+  // Only show loading spinner on very first load
+  if (!cryptoCache) {
     el.innerHTML = "<div style='padding:10px;color:#888'>Loading...</div>";
   }
 
   try {
     const res = await fetch("/crypto");
     cryptoCache = await res.json();
-
     renderCrypto();
     updateTicker();
-
-    hasLoadedOnce = true;
-
   } catch {
-    if (!hasLoadedOnce) {
-      el.innerHTML = "<div style='color:#ff4d4d'>Failed to load</div>";
+    // First load failure — show error
+    if (!cryptoCache) {
+      el.innerHTML = "<div style='padding:10px;color:#ff4d4d'>Failed to load prices</div>";
     }
+    // On refresh failure — silently keep showing cached data
   }
+}
+
+// NAV
+function showTab(tab, e) {
+  document.getElementById("crypto").style.display = tab === "crypto" ? "block" : "none";
+  document.getElementById("stocks").style.display = tab === "stocks" ? "block" : "none";
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  e.target.classList.add("active");
 }
 
 // INIT
@@ -297,11 +382,11 @@ loadFear();
 loadCrypto();
 renderStocks();
 
-// REFRESH
+// Refresh every 60s — matches server-side cache interval
 setInterval(() => {
   loadCrypto();
   loadMarket();
-}, 30000);
+}, 60000);
 
 </script>
 
