@@ -11,7 +11,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont;
 }
 
-/* 🔥 TICKER */
+/* 🔥 TICKER (FIXED) */
 .ticker {
   width: 100%;
   overflow: hidden;
@@ -23,13 +23,13 @@ body {
 .ticker-content {
   display: inline-block;
   white-space: nowrap;
-  animation: scrollTicker 30s linear infinite;
+  animation: scrollTicker 12s linear infinite;
   font-size: 13px;
 }
 
 @keyframes scrollTicker {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }
 
 .header { padding: 15px; border-bottom: 1px solid #222; }
@@ -142,7 +142,7 @@ function getConfidence(change) {
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
-// 🔥 FIXED TICKER
+// 🔥 FIXED TICKER (LIGHTWEIGHT)
 function updateTicker() {
   if (!cryptoCache) return;
 
@@ -164,9 +164,8 @@ function updateTicker() {
     const color = change >= 0 ? "#00ff88" : "#ff4d4d";
 
     html += `
-      <span style="margin-right:40px">
-        <span style="color:#ccc">${name}</span>
-        $${formatPrice(d.usd)}
+      <span style="margin-right:35px">
+        ${name} $${formatPrice(d.usd)}
         <span style="color:${color}">
           ${arrow} ${Math.abs(change).toFixed(2)}%
         </span>
@@ -174,21 +173,18 @@ function updateTicker() {
     `;
   });
 
-  // 🔥 duplicate for seamless loop
-  const full = html + html;
-
-  const el = document.getElementById("tickerContent");
-
-  if (el.innerHTML !== full) {
-    el.innerHTML = full;
-  }
+  document.getElementById("tickerContent").innerHTML = html;
 }
 
-// EXPAND
+// 🔥 FIXED EXPAND (NO BREAKING STOCKS)
 function toggleExpand(symbol) {
   expanded = expanded === symbol ? null : symbol;
-  renderCrypto();
-  renderStocks();
+
+  if (document.getElementById("crypto").style.display !== "none") {
+    renderCrypto();
+  } else {
+    renderStocks();
+  }
 }
 
 // RENDER CRYPTO
@@ -250,7 +246,7 @@ function renderCrypto() {
   el.innerHTML = html;
 }
 
-// STOCKS
+// STOCKS (FIXED)
 function renderStocks() {
   const el = document.getElementById("stocks");
 
@@ -352,7 +348,7 @@ loadFear();
 loadCrypto();
 renderStocks();
 
-// 🔄 refresh loop
+// 🔄 REFRESH
 setInterval(() => {
   loadCrypto();
   loadMarket();
