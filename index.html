@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  background: #0d1117;
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont;
+}
+
+.header { padding: 15px; border-bottom: 1px solid #222; }
+.header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.header-card {
+  background: #161b22;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.label { font-size: 12px; color: #888; }
+.value { font-weight: bold; margin-top: 5px; }
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  padding: 15px;
+  border-bottom: 1px solid #222;
+}
+
+.tab { color: #888; cursor: pointer; }
+.tab.active { color: #00ff88; }
+
+.list { padding: 10px; }
+
+.card {
+  background: #161b22;
+  margin: 8px 0;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.left { display: flex; flex-direction: column; }
+
+.sparkline { width: 80px; height: 30px; }
+
+.green { color: #00ff88; }
+.red { color: #ff4d4d; }
+.yellow { color: #ffd166; }
+
+.ai {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.confidence {
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.star {
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+iframe {
+  width: 100%;
+  height: 250px;
+  border: none;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="header-grid">
+    <div class="header-card"><div class="label">Market Cap</div><div id="marketCap" class="value">...</div></div>
+    <div class="header-card"><div class="label">24h Change</div><div id="marketChange" class="value">...</div></div>
+    <div class="header-card"><div class="label">BTC Dominance</div><div id="btcDom" class="value">...</div></div>
+    <div class="header-card"><div class="label">Fear & Greed</div><div id="fearValue" class="value">...</div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('crypto', event)">Crypto</div>
+  <div class="tab" onclick="showTab('stocks', event)">Stocks</div>
+</div>
+
+<div id="crypto" class="list"></div>
+<div id="stocks" class="list" style="display:none;"></div>
+
+<script>
+
+const cryptoList = [
+  { id:"bitcoin", symbol:"BTC" },
+  { id:"hedera-hashgraph", symbol:"HBAR" },
+  { id:"ripple", symbol:"XRP" },
+  { id:"chainlink", symbol:"LINK" },
+  { id:"solana", symbol:"SOL" }
+];
+
+let watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
+let expanded = null;
+
+// FORMAT
+function formatPrice(p){
+  if(p>=1000) return p.toLocaleString(undefined,{maximumFractionDigits:2});
+  if(p>=1) return p.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4});
+  return p.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:6});
+}
+
+// SPARK
+function spark(prices,up){
+  const max=Math.max(...prices), min=Math.min(...prices);
+  const pts=prices.map((p,i)=>{
+    const x=(i/(prices.length-1))*100;
+    const y=30-((p-min)/(max-min))*30;
+    return `${x},${y}`;
+  }).join(" ");
+  return `<svg class="sparkline" viewBox="0 0 100 30">
+    <polyline fill="none" stroke="${up?"#00ff88":"#ff4d4d"}" stroke-width="2" points="${pts}"/>
+  </svg>`;
+}
+
+// 🧠 INSIGHT
+function getInsight(change, momentum){
+  if(change > 5 && momentum > 0) return "🚀 Strong upward momentum";
+  if(change > 2) return "📈 Uptrend forming";
+  if(change < -5) return "🔻 Strong downtrend";
+  if(change < -2) return "⚠️ Pullback / weakness";
+  return "➖ Consolidating";
+}
+
+// 🎯 CONFIDENCE SCORE
+function getConfidence(change, momentum){
+  let score = 50;
+
+  score += change * 3;
+  score += momentum * 10;
+
+  score = Math.max(0, Math.min(100, score));
+
+  return Math.round(score);
+}
+
+// WATCHLIST
+function toggleWatch(symbol,e){
+  e.stopPropagation();
+  if(watchlist.includes(symbol)){
+    watchlist = watchlist.filter(s=>s!==symbol);
+  } else {
+    watchlist.push(symbol);
+  }
+  localStorage.setItem("watchlist", JSON.stringify(watchlist));
+  loadCrypto();
+}
+
+// EXPAND
+function toggleExpand(symbol){
+  expanded = expanded === symbol ? null : symbol;
+  loadCrypto();
+}
+
+// MARKET
+async function loadMarket(){
+  const r = await fetch("https://api.coingecko.com/api/v3/global");
+  const d = await r.json();
+  document.getElementById("marketCap").textContent="$"+(d.data.total_market_cap.usd/1e12).toFixed(2)+"T";
+  document.getElementById("marketChange").textContent=d.data.market_cap_change_percentage_24h_usd.toFixed(2)+"%";
+  document.getElementById("btcDom").textContent=d.data.market_cap_percentage.btc.toFixed(1)+"%";
+}
+
+// FEAR
+async function loadFear(){
+  const r = await fetch("https://api.alternative.me/fng/");
+  const d = await r.json();
+  document.getElementById("fearValue").textContent=d.data[0].value;
+}
+
+// CRYPTO
+async function loadCrypto(){
+  const el=document.getElementById("crypto");
+  el.innerHTML="";
+
+  const results = await Promise.all(cryptoList.map(async c=>{
+    const r = await fetch(`https://api.coingecko.com/api/v3/coins/${c.id}/market_chart?vs_currency=usd&days=1`);
+    const d = await r.json();
+
+    const prices=d.prices.map(p=>p[1]);
+    const current=prices.at(-1);
+    const first=prices[0];
+    const mid=prices[Math.floor(prices.length/2)];
+
+    const change=((current-first)/first)*100;
+    const momentum=(current-mid)/mid;
+
+    return {
+      symbol:c.symbol,
+      prices,
+      current,
+      change,
+      insight:getInsight(change, momentum),
+      confidence:getConfidence(change, momentum)
+    };
+  }));
+
+  results.forEach(c=>{
+    let colorClass = c.confidence > 70 ? "green" :
+                     c.confidence > 40 ? "yellow" : "red";
+
+    el.innerHTML+=`
+      <div class="card" onclick="toggleExpand('${c.symbol}')">
+        <div class="row">
+          <div class="left">
+            <div>
+              ${c.symbol}
+              <span class="star" onclick="toggleWatch('${c.symbol}',event)">
+                ${watchlist.includes(c.symbol)?"⭐":"☆"}
+              </span>
+            </div>
+            ${spark(c.prices.slice(-20),c.change>=0)}
+          </div>
+          <div>
+            <div>$${formatPrice(c.current)}</div>
+            <div class="${c.change>=0?'green':'red'}">${c.change.toFixed(2)}%</div>
+          </div>
+        </div>
+
+        <div class="ai">${c.insight}</div>
+        <div class="confidence ${colorClass}">
+          Confidence: ${c.confidence}%
+        </div>
+
+        ${expanded===c.symbol?`
+          <iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${c.symbol}"></iframe>
+        `:""}
+      </div>
+    `;
+  });
+}
+
+// STOCKS
+function loadStocks(){
+  const el=document.getElementById("stocks");
+  el.innerHTML="";
+  ["AMD","NVDA","SOFI","SCHD","HOOD"].forEach(s=>{
+    el.innerHTML+=`
+      <div class="card" onclick="toggleExpand('${s}')">
+        <div class="row"><div>${s}</div><div>Tap</div></div>
+        ${expanded===s?`<iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${s}"></iframe>`:""}
+      </div>`;
+  });
+}
+
+// NAV
+function showTab(tab,e){
+  document.getElementById("crypto").style.display=tab==="crypto"?"block":"none";
+  document.getElementById("stocks").style.display=tab==="stocks"?"block":"none";
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  e.target.classList.add("active");
+}
+
+// INIT
+loadMarket();
+loadFear();
+loadCrypto();
+loadStocks();
+
+setInterval(()=>{
+  loadMarket();
+  loadFear();
+  loadCrypto();
+},20000);
+
+</script>
+
+</body>
+</html>
