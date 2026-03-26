@@ -40,6 +40,7 @@ body {
   margin: 8px 0;
   border-radius: 12px;
   padding: 15px;
+  cursor: pointer;
 }
 
 .row {
@@ -62,12 +63,11 @@ body {
   margin-top: 3px;
 }
 
-iframe {
-  width: 100%;
-  height: 250px;
-  border: none;
-  border-radius: 10px;
+.chart-container {
   margin-top: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 250px;
 }
 </style>
 
@@ -94,36 +94,126 @@ iframe {
 <script>
 
 let expanded = null;
+let cryptoCache = null;
 
 // FORMAT
-function formatPrice(p){
-  if(p >= 1) return p.toFixed(2);
+function formatPrice(p) {
+  if (p >= 1) return p.toFixed(2);
   return p.toFixed(5);
 }
 
 // AI
-function getInsight(change){
-  if(change > 5) return "🚀 Strong upward momentum";
-  if(change > 2) return "📈 Uptrend forming";
-  if(change < -5) return "🔻 Strong downtrend";
-  if(change < -2) return "⚠️ Pullback";
+function getInsight(change) {
+  if (change > 5) return "🚀 Strong upward momentum";
+  if (change > 2) return "📈 Uptrend forming";
+  if (change < -5) return "🔻 Strong downtrend";
+  if (change < -2) return "⚠️ Pullback";
   return "➖ Consolidating";
 }
 
-function getConfidence(change){
+function getConfidence(change) {
   let score = 50 + (change * 4);
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 // EXPAND
-function toggleExpand(symbol){
+function toggleExpand(symbol) {
   expanded = expanded === symbol ? null : symbol;
-  loadCrypto();
-  loadStocks();
+  renderCrypto();
+  renderStocks();
 }
 
-// MARKET
-async function loadMarket(){
+// RENDER CRYPTO
+function renderCrypto() {
+  const el = document.getElementById("crypto");
+  if (!cryptoCache) return;
+
+  const map = {
+    BTC:  { data: cryptoCache.bitcoin,            tvSymbol: "BTCUSD" },
+    HBAR: { data: cryptoCache["hedera-hashgraph"], tvSymbol: "HBARUSD" },
+    XRP:  { data: cryptoCache.ripple,             tvSymbol: "XRPUSD" },
+    LINK: { data: cryptoCache.chainlink,          tvSymbol: "LINKUSD" },
+    SOL:  { data: cryptoCache.solana,             tvSymbol: "SOLUSD" }
+  };
+
+  let html = "";
+
+  Object.entries(map).forEach(([symbol, { data: d, tvSymbol }]) => {
+    if (!d) return;
+
+    const insight = getInsight(d.usd_24h_change);
+    const confidence = getConfidence(d.usd_24h_change);
+    const color = confidence > 70 ? "green" : confidence > 40 ? "yellow" : "red";
+    const changeColor = d.usd_24h_change >= 0 ? "green" : "red";
+    const isExpanded = expanded === symbol;
+
+    html += `
+      <div class="card" onclick="toggleExpand('${symbol}')">
+        <div class="row">
+          <div>${symbol}</div>
+          <div style="text-align:right">
+            $${formatPrice(d.usd)}<br>
+            <span class="${changeColor}">${d.usd_24h_change.toFixed(2)}%</span>
+          </div>
+        </div>
+        <div class="ai">${insight}</div>
+        <div class="confidence ${color}">Confidence: ${confidence}%</div>
+
+        ${isExpanded ? `
+          <div class="chart-container">
+            <iframe
+              src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#%7B%22symbol%22%3A%22${tvSymbol}%22%2C%22dateRange%22%3A%221D%22%2C%22colorTheme%22%3A%22dark%22%2C%22isTransparent%22%3Atrue%2C%22autosize%22%3Atrue%7D"
+              style="width:100%;height:100%;border:none;"
+            ></iframe>
+          </div>
+        ` : ""}
+      </div>
+    `;
+  });
+
+  el.innerHTML = html;
+}
+
+// STOCKS
+function renderStocks() {
+  const el = document.getElementById("stocks");
+
+  const stocks = [
+    { symbol: "AMD",  tvSymbol: "NASDAQ:AMD" },
+    { symbol: "NVDA", tvSymbol: "NASDAQ:NVDA" },
+    { symbol: "SOFI", tvSymbol: "NASDAQ:SOFI" },
+    { symbol: "SCHD", tvSymbol: "AMEX:SCHD" },
+    { symbol: "HOOD", tvSymbol: "NASDAQ:HOOD" }
+  ];
+
+  let html = "";
+
+  stocks.forEach(({ symbol, tvSymbol }) => {
+    const isExpanded = expanded === symbol;
+    html += `
+      <div class="card" onclick="toggleExpand('${symbol}')">
+        <div class="row">
+          <div>${symbol}</div>
+          <div style="color:#888;font-size:12px;">Tap to expand</div>
+        </div>
+
+        ${isExpanded ? `
+          <div class="chart-container">
+            <iframe
+              src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#%7B%22symbol%22%3A%22${encodeURIComponent(tvSymbol)}%22%2C%22dateRange%22%3A%221D%22%2C%22colorTheme%22%3A%22dark%22%2C%22isTransparent%22%3Atrue%2C%22autosize%22%3Atrue%7D"
+              style="width:100%;height:100%;border:none;"
+            ></iframe>
+          </div>
+        ` : ""}
+      </div>
+    `;
+  });
+
+  el.innerHTML = html;
+}
+
+// MARKET (FIXED → backend)
+async function loadMarket() {
   try {
     const res = await fetch("/market");
     const d = await res.json();
@@ -131,8 +221,10 @@ async function loadMarket(){
     document.getElementById("marketCap").textContent =
       "$" + (d.data.total_market_cap.usd / 1e12).toFixed(2) + "T";
 
-    document.getElementById("marketChange").textContent =
-      d.data.market_cap_change_percentage_24h_usd.toFixed(2) + "%";
+    const change = d.data.market_cap_change_percentage_24h_usd;
+    const changeEl = document.getElementById("marketChange");
+    changeEl.textContent = change.toFixed(2) + "%";
+    changeEl.className = "value " + (change >= 0 ? "green" : "red");
 
     document.getElementById("btcDom").textContent =
       d.data.market_cap_percentage.btc.toFixed(1) + "%";
@@ -143,99 +235,36 @@ async function loadMarket(){
 }
 
 // FEAR
-async function loadFear(){
+async function loadFear() {
   try {
     const r = await fetch("https://api.alternative.me/fng/");
     const d = await r.json();
-    document.getElementById("fearValue").textContent = d.data[0].value;
+    document.getElementById("fearValue").textContent =
+      d.data[0].value + " – " + d.data[0].value_classification;
   } catch {
     document.getElementById("fearValue").textContent = "--";
   }
 }
 
-// CRYPTO
-async function loadCrypto(){
+// CRYPTO (FIXED → backend)
+async function loadCrypto() {
   const el = document.getElementById("crypto");
-  el.innerHTML = "Loading...";
+  el.innerHTML = "<div style='padding:10px;color:#888'>Loading...</div>";
 
   try {
     const res = await fetch("/crypto");
-    const data = await res.json();
-
-    const map = {
-      BTC: data.bitcoin,
-      HBAR: data["hedera-hashgraph"],
-      XRP: data.ripple,
-      LINK: data.chainlink,
-      SOL: data.solana
-    };
-
-    el.innerHTML = "";
-
-    Object.entries(map).forEach(([symbol, d]) => {
-      if (!d) return;
-
-      const insight = getInsight(d.usd_24h_change);
-      const confidence = getConfidence(d.usd_24h_change);
-
-      let color = confidence > 70 ? "green" :
-                  confidence > 40 ? "yellow" : "red";
-
-      el.innerHTML += `
-        <div class="card" onclick="toggleExpand('${symbol}')">
-          <div class="row">
-            <div>${symbol}</div>
-            <div>
-              $${formatPrice(d.usd)}<br>
-              <span class="${d.usd_24h_change >= 0 ? 'green':'red'}">
-                ${d.usd_24h_change.toFixed(2)}%
-              </span>
-            </div>
-          </div>
-
-          <div class="ai">${insight}</div>
-          <div class="confidence ${color}">
-            Confidence: ${confidence}%
-          </div>
-
-          ${expanded === symbol ? `
-            <iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${symbol}USD"></iframe>
-          ` : ""}
-        </div>
-      `;
-    });
-
+    cryptoCache = await res.json();
+    renderCrypto();
   } catch {
-    el.innerHTML = "Failed to load prices";
+    el.innerHTML = "<div style='padding:10px;color:#ff4d4d'>Failed to load prices</div>";
   }
 }
 
-// STOCKS
-function loadStocks(){
-  const el = document.getElementById("stocks");
-  el.innerHTML = "";
-
-  ["AMD","NVDA","SOFI","SCHD","HOOD"].forEach(s => {
-    el.innerHTML += `
-      <div class="card" onclick="toggleExpand('${s}')">
-        <div class="row">
-          <div>${s}</div>
-          <div>Tap</div>
-        </div>
-
-        ${expanded === s ? `
-          <iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${s}"></iframe>
-        ` : ""}
-      </div>
-    `;
-  });
-}
-
 // NAV
-function showTab(tab,e){
-  document.getElementById("crypto").style.display=tab==="crypto"?"block":"none";
-  document.getElementById("stocks").style.display=tab==="stocks"?"block":"none";
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+function showTab(tab, e) {
+  document.getElementById("crypto").style.display = tab === "crypto" ? "block" : "none";
+  document.getElementById("stocks").style.display = tab === "stocks" ? "block" : "none";
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   e.target.classList.add("active");
 }
 
@@ -243,7 +272,7 @@ function showTab(tab,e){
 loadMarket();
 loadFear();
 loadCrypto();
-loadStocks();
+renderStocks();
 
 </script>
 
