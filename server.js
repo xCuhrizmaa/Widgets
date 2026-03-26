@@ -1,129 +1,152 @@
-import express from "express";
-import fetch from "node-fetch";
-import path from "path";
-import { fileURLToPath } from "url";
+import express from “express”;
+import fetch from “node-fetch”;
+import path from “path”;
+import { fileURLToPath } from “url”;
 
 const app = express();
 
-// Fix __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname  = path.dirname(__filename);
 
-// Serve frontend
 app.use(express.static(__dirname));
 
-// Headers
 const HEADERS = {
-  "Accept": "application/json",
-  "User-Agent": "Mozilla/5.0"
+“Accept”: “application/json”,
+“User-Agent”: “Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36”
 };
 
-// 🔥 CRYPTO CACHE
+// ── CACHE ──────────────────────────────────────────────
 let cryptoCache = null;
-let cryptoTime = 0;
+let cryptoTime  = 0;
 
-// 🔥 MARKET CACHE
 let marketCache = null;
-let marketTime = 0;
+let marketTime  = 0;
 
-// 🔥 S&P CACHE (NEW)
-let stocksCache = null;
-let stocksTime  = 0;
+let sp500Cache  = null;
+let sp500Time   = 0;
 
-// CRYPTO
-app.get("/crypto", async (req, res) => {
-  const now = Date.now();
+// ── CRYPTO ─────────────────────────────────────────────
+app.get(”/crypto”, async (req, res) => {
+const now = Date.now();
+if (cryptoCache && now - cryptoTime < 60000) return res.json(cryptoCache);
 
-  if (cryptoCache && now - cryptoTime < 60000) {
-    return res.json(cryptoCache);
-  }
-
-  try {
-    const r = await fetch(
-      "https://api.coingecko.com/api/v3/simple/price" +
-      "?ids=bitcoin,hedera-hashgraph,ripple,chainlink,solana" +
-      "&vs_currencies=usd&include_24hr_change=true",
-      { headers: HEADERS }
-    );
-
-    const data = await r.json();
-
-    cryptoCache = data;
-    cryptoTime = now;
-
-    res.json(data);
-
-  } catch {
-    if (cryptoCache) return res.json(cryptoCache);
-    res.status(500).json({ error: "crypto failed" });
-  }
+try {
+const r = await fetch(
+“https://api.coingecko.com/api/v3/simple/price” +
+“?ids=bitcoin,hedera-hashgraph,ripple,chainlink,solana” +
+“&vs_currencies=usd&include_24hr_change=true”,
+{ headers: HEADERS }
+);
+const data = await r.json();
+cryptoCache = data;
+cryptoTime  = now;
+res.json(data);
+} catch (err) {
+console.log(“Crypto error:”, err.message);
+if (cryptoCache) return res.json(cryptoCache);
+res.status(500).json({ error: “Failed to fetch crypto” });
+}
 });
 
-// MARKET
-app.get("/market", async (req, res) => {
-  const now = Date.now();
+// ── MARKET ─────────────────────────────────────────────
+app.get(”/market”, async (req, res) => {
+const now = Date.now();
+if (marketCache && now - marketTime < 60000) return res.json(marketCache);
 
-  if (marketCache && now - marketTime < 60000) {
-    return res.json(marketCache);
-  }
-
-  try {
-    const r = await fetch(
-      "https://api.coingecko.com/api/v3/global",
-      { headers: HEADERS }
-    );
-
-    const data = await r.json();
-
-    marketCache = data;
-    marketTime = now;
-
-    res.json(data);
-
-  } catch {
-    if (marketCache) return res.json(marketCache);
-    res.status(500).json({ error: "market failed" });
-  }
+try {
+const r    = await fetch(“https://api.coingecko.com/api/v3/global”, { headers: HEADERS });
+const data = await r.json();
+marketCache = data;
+marketTime  = now;
+res.json(data);
+} catch (err) {
+console.log(“Market error:”, err.message);
+if (marketCache) return res.json(marketCache);
+res.status(500).json({ error: “Failed to fetch market” });
+}
 });
 
-// 🔥 S&P 500 (NEW — FROM YOUR FRIEND)
-app.get("/sp500", async (req, res) => {
-  const now = Date.now();
+// ── S&P 500 ────────────────────────────────────────────
+// Try two Yahoo Finance endpoints — fall back to the second if the first fails
+app.get(”/sp500”, async (req, res) => {
+const now = Date.now();
 
-  if (stocksCache && now - stocksTime < 60000) {
-    return res.json(stocksCache);
-  }
+// Return cache if fresh (5 min for S&P — it moves slower)
+if (sp500Cache && now - sp500Time < 300000) {
+console.log(“SP500 cache hit:”, sp500Cache);
+return res.json(sp500Cache);
+}
 
-  try {
-    const r = await fetch(
-      "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=2d",
-      { headers: HEADERS }
-    );
+// Primary: v8 chart endpoint
+try {
+const r    = await fetch(
+“https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=2d”,
+{ headers: HEADERS }
+);
+const data = await r.json();
 
-    const data = await r.json();
-    const meta = data.chart.result[0].meta;
+```
+const meta  = data?.chart?.result?.[0]?.meta;
+const price = meta?.regularMarketPrice;
+const prev  = meta?.chartPreviousClose;
 
-    const price = meta.regularMarketPrice;
-    const prev  = meta.chartPreviousClose;
-    const change = ((price - prev) / prev) * 100;
+if (price && prev) {
+  const change = ((price - prev) / prev) * 100;
+  sp500Cache   = { price, change };
+  sp500Time    = now;
+  console.log("SP500 primary success:", sp500Cache);
+  return res.json(sp500Cache);
+}
 
-    stocksCache = { price, change };
-    stocksTime  = now;
+throw new Error("Missing price data in primary response");
+```
 
-    res.json(stocksCache);
+} catch (err) {
+console.log(“SP500 primary failed:”, err.message, “— trying fallback…”);
+}
 
-  } catch {
-    if (stocksCache) return res.json(stocksCache);
-    res.status(500).json({ error: "sp500 failed" });
-  }
+// Fallback: v7 quote endpoint
+try {
+const r    = await fetch(
+“https://query2.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC”,
+{ headers: HEADERS }
+);
+const data = await r.json();
+
+```
+const quote  = data?.quoteResponse?.result?.[0];
+const price  = quote?.regularMarketPrice;
+const change = quote?.regularMarketChangePercent;
+
+if (price && change !== undefined) {
+  sp500Cache = { price, change };
+  sp500Time  = now;
+  console.log("SP500 fallback success:", sp500Cache);
+  return res.json(sp500Cache);
+}
+
+throw new Error("Missing price data in fallback response");
+```
+
+} catch (err) {
+console.log(“SP500 fallback failed:”, err.message);
+}
+
+// Both failed — return stale cache if we have it, otherwise error
+if (sp500Cache) {
+console.log(“SP500 returning stale cache”);
+return res.json(sp500Cache);
+}
+
+res.status(500).json({ error: “Failed to fetch S&P 500” });
 });
 
-// HOMEPAGE
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+// ── HOME ───────────────────────────────────────────────
+app.get(”/”, (req, res) => {
+res.sendFile(path.join(__dirname, “index.html”));
 });
 
-// START
+// ── START ──────────────────────────────────────────────
 app.listen(process.env.PORT || 3000, () => {
-  console.log("Server running");
+console.log(“Server running”);
 });
