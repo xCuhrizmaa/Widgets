@@ -11,7 +11,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont;
 }
 
-/* TICKER */
+/* 🔥 TICKER */
 .ticker {
   width: 100%;
   overflow: hidden;
@@ -28,8 +28,8 @@ body {
 }
 
 @keyframes scrollTicker {
-  0%   { transform: translateX(100vw); }
-  100% { transform: translateX(-100%); }
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 .header { padding: 15px; border-bottom: 1px solid #222; }
@@ -95,7 +95,7 @@ body {
 </head>
 <body>
 
-<!-- TICKER -->
+<!-- 🔥 TICKER -->
 <div class="ticker">
   <div id="tickerContent" class="ticker-content">Loading...</div>
 </div>
@@ -142,7 +142,7 @@ function getConfidence(change) {
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
-// TICKER — fixed: shows price AND % change
+// 🔥 FIXED TICKER
 function updateTicker() {
   if (!cryptoCache) return;
 
@@ -158,19 +158,30 @@ function updateTicker() {
 
   items.forEach(({ name, data: d }) => {
     if (!d) return;
+
     const change = d.usd_24h_change;
     const arrow = change >= 0 ? "▲" : "▼";
     const color = change >= 0 ? "#00ff88" : "#ff4d4d";
+
     html += `
-      <span style="margin-right:30px">
+      <span style="margin-right:40px">
         <span style="color:#ccc">${name}</span>
         $${formatPrice(d.usd)}
-        <span style="color:${color}">${arrow} ${Math.abs(change).toFixed(2)}%</span>
+        <span style="color:${color}">
+          ${arrow} ${Math.abs(change).toFixed(2)}%
+        </span>
       </span>
     `;
   });
 
-  document.getElementById("tickerContent").innerHTML = html;
+  // 🔥 duplicate for seamless loop
+  const full = html + html;
+
+  const el = document.getElementById("tickerContent");
+
+  if (el.innerHTML !== full) {
+    el.innerHTML = full;
+  }
 }
 
 // EXPAND
@@ -186,11 +197,11 @@ function renderCrypto() {
   if (!cryptoCache) return;
 
   const map = {
-    BTC:  { data: cryptoCache.bitcoin,             tvSymbol: "BTCUSD" },
-    HBAR: { data: cryptoCache["hedera-hashgraph"],  tvSymbol: "HBARUSD" },
-    XRP:  { data: cryptoCache.ripple,              tvSymbol: "XRPUSD" },
-    LINK: { data: cryptoCache.chainlink,           tvSymbol: "LINKUSD" },
-    SOL:  { data: cryptoCache.solana,              tvSymbol: "SOLUSD" }
+    BTC:  { data: cryptoCache.bitcoin, tvSymbol: "BTCUSD" },
+    HBAR: { data: cryptoCache["hedera-hashgraph"], tvSymbol: "HBARUSD" },
+    XRP:  { data: cryptoCache.ripple, tvSymbol: "XRPUSD" },
+    LINK: { data: cryptoCache.chainlink, tvSymbol: "LINKUSD" },
+    SOL:  { data: cryptoCache.solana, tvSymbol: "SOLUSD" }
   };
 
   let html = "";
@@ -204,7 +215,6 @@ function renderCrypto() {
     const changeColor = d.usd_24h_change >= 0 ? "green" : "red";
     const isExpanded = expanded === symbol;
 
-    // Full TradingView params restored
     const tvParams = encodeURIComponent(JSON.stringify({
       symbol: tvSymbol,
       dateRange: "1D",
@@ -224,6 +234,7 @@ function renderCrypto() {
         </div>
         <div class="ai">${insight}</div>
         <div class="confidence ${color}">Confidence: ${confidence}%</div>
+
         ${isExpanded ? `
           <div class="chart-container">
             <iframe
@@ -239,7 +250,7 @@ function renderCrypto() {
   el.innerHTML = html;
 }
 
-// RENDER STOCKS — restored onclick + TradingView charts
+// STOCKS
 function renderStocks() {
   const el = document.getElementById("stocks");
 
@@ -270,6 +281,7 @@ function renderStocks() {
           <div>${symbol}</div>
           <div style="color:#888;font-size:12px;">Tap to expand</div>
         </div>
+
         ${isExpanded ? `
           <div class="chart-container">
             <iframe
@@ -319,7 +331,7 @@ async function loadFear() {
   }
 }
 
-// CRYPTO — restored error feedback
+// CRYPTO
 async function loadCrypto() {
   const el = document.getElementById("crypto");
   el.innerHTML = "<div style='padding:10px;color:#888'>Loading...</div>";
@@ -334,19 +346,17 @@ async function loadCrypto() {
   }
 }
 
-// NAV
-function showTab(tab, e) {
-  document.getElementById("crypto").style.display = tab === "crypto" ? "block" : "none";
-  document.getElementById("stocks").style.display = tab === "stocks" ? "block" : "none";
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  e.target.classList.add("active");
-}
-
 // INIT
 loadMarket();
 loadFear();
 loadCrypto();
 renderStocks();
+
+// 🔄 refresh loop
+setInterval(() => {
+  loadCrypto();
+  loadMarket();
+}, 30000);
 
 </script>
 
