@@ -11,6 +11,27 @@ body {
   font-family: -apple-system, BlinkMacSystemFont;
 }
 
+/* 🔥 TICKER */
+.ticker {
+  width: 100%;
+  overflow: hidden;
+  background: #0b0f14;
+  border-bottom: 1px solid #222;
+  padding: 8px 0;
+}
+
+.ticker-content {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scrollTicker 25s linear infinite;
+  font-size: 13px;
+}
+
+@keyframes scrollTicker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
 .header { padding: 15px; border-bottom: 1px solid #222; }
 .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
@@ -74,6 +95,11 @@ body {
 </head>
 <body>
 
+<!-- 🔥 TICKER -->
+<div class="ticker">
+  <div id="tickerContent" class="ticker-content">Loading...</div>
+</div>
+
 <div class="header">
   <div class="header-grid">
     <div class="header-card"><div class="label">Market Cap</div><div id="marketCap" class="value">...</div></div>
@@ -116,6 +142,41 @@ function getConfidence(change) {
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
+// 🔥 TICKER UPDATE
+function updateTicker() {
+  if (!cryptoCache) return;
+
+  const items = [
+    { name: "BTC", data: cryptoCache.bitcoin },
+    { name: "HBAR", data: cryptoCache["hedera-hashgraph"] },
+    { name: "XRP", data: cryptoCache.ripple },
+    { name: "LINK", data: cryptoCache.chainlink },
+    { name: "SOL", data: cryptoCache.solana }
+  ];
+
+  let html = "";
+
+  items.forEach(i => {
+    if (!i.data) return;
+
+    const price = i.data.usd;
+    const change = i.data.usd_24h_change;
+    const arrow = change >= 0 ? "▲" : "▼";
+    const color = change >= 0 ? "#00ff88" : "#ff4d4d";
+
+    html += `
+      <span style="margin-right:25px">
+        ${i.name} $${price.toFixed(price >= 1 ? 2 : 4)}
+        <span style="color:${color}">${arrow}</span>
+      </span>
+    `;
+  });
+
+  html += `<span style="margin-left:20px;color:#888">S&P 500</span>`;
+
+  document.getElementById("tickerContent").innerHTML = html;
+}
+
 // EXPAND
 function toggleExpand(symbol) {
   expanded = expanded === symbol ? null : symbol;
@@ -129,11 +190,11 @@ function renderCrypto() {
   if (!cryptoCache) return;
 
   const map = {
-    BTC:  { data: cryptoCache.bitcoin,            tvSymbol: "BTCUSD" },
+    BTC:  { data: cryptoCache.bitcoin, tvSymbol: "BTCUSD" },
     HBAR: { data: cryptoCache["hedera-hashgraph"], tvSymbol: "HBARUSD" },
-    XRP:  { data: cryptoCache.ripple,             tvSymbol: "XRPUSD" },
-    LINK: { data: cryptoCache.chainlink,          tvSymbol: "LINKUSD" },
-    SOL:  { data: cryptoCache.solana,             tvSymbol: "SOLUSD" }
+    XRP:  { data: cryptoCache.ripple, tvSymbol: "XRPUSD" },
+    LINK: { data: cryptoCache.chainlink, tvSymbol: "LINKUSD" },
+    SOL:  { data: cryptoCache.solana, tvSymbol: "SOLUSD" }
   };
 
   let html = "";
@@ -162,7 +223,7 @@ function renderCrypto() {
         ${isExpanded ? `
           <div class="chart-container">
             <iframe
-              src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#%7B%22symbol%22%3A%22${tvSymbol}%22%2C%22dateRange%22%3A%221D%22%2C%22colorTheme%22%3A%22dark%22%2C%22isTransparent%22%3Atrue%2C%22autosize%22%3Atrue%7D"
+              src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#%7B%22symbol%22%3A%22${tvSymbol}%22%7D"
               style="width:100%;height:100%;border:none;"
             ></iframe>
           </div>
@@ -178,41 +239,14 @@ function renderCrypto() {
 function renderStocks() {
   const el = document.getElementById("stocks");
 
-  const stocks = [
-    { symbol: "AMD",  tvSymbol: "NASDAQ:AMD" },
-    { symbol: "NVDA", tvSymbol: "NASDAQ:NVDA" },
-    { symbol: "SOFI", tvSymbol: "NASDAQ:SOFI" },
-    { symbol: "SCHD", tvSymbol: "AMEX:SCHD" },
-    { symbol: "HOOD", tvSymbol: "NASDAQ:HOOD" }
-  ];
+  const stocks = ["AMD","NVDA","SOFI","SCHD","HOOD"];
 
-  let html = "";
-
-  stocks.forEach(({ symbol, tvSymbol }) => {
-    const isExpanded = expanded === symbol;
-    html += `
-      <div class="card" onclick="toggleExpand('${symbol}')">
-        <div class="row">
-          <div>${symbol}</div>
-          <div style="color:#888;font-size:12px;">Tap to expand</div>
-        </div>
-
-        ${isExpanded ? `
-          <div class="chart-container">
-            <iframe
-              src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#%7B%22symbol%22%3A%22${encodeURIComponent(tvSymbol)}%22%2C%22dateRange%22%3A%221D%22%2C%22colorTheme%22%3A%22dark%22%2C%22isTransparent%22%3Atrue%2C%22autosize%22%3Atrue%7D"
-              style="width:100%;height:100%;border:none;"
-            ></iframe>
-          </div>
-        ` : ""}
-      </div>
-    `;
-  });
-
-  el.innerHTML = html;
+  el.innerHTML = stocks.map(s => `
+    <div class="card">${s}</div>
+  `).join("");
 }
 
-// MARKET (FIXED → backend)
+// MARKET
 async function loadMarket() {
   try {
     const res = await fetch("/market");
@@ -221,10 +255,8 @@ async function loadMarket() {
     document.getElementById("marketCap").textContent =
       "$" + (d.data.total_market_cap.usd / 1e12).toFixed(2) + "T";
 
-    const change = d.data.market_cap_change_percentage_24h_usd;
-    const changeEl = document.getElementById("marketChange");
-    changeEl.textContent = change.toFixed(2) + "%";
-    changeEl.className = "value " + (change >= 0 ? "green" : "red");
+    document.getElementById("marketChange").textContent =
+      d.data.market_cap_change_percentage_24h_usd.toFixed(2) + "%";
 
     document.getElementById("btcDom").textContent =
       d.data.market_cap_percentage.btc.toFixed(1) + "%";
@@ -246,26 +278,14 @@ async function loadFear() {
   }
 }
 
-// CRYPTO (FIXED → backend)
+// CRYPTO
 async function loadCrypto() {
-  const el = document.getElementById("crypto");
-  el.innerHTML = "<div style='padding:10px;color:#888'>Loading...</div>";
-
   try {
     const res = await fetch("/crypto");
     cryptoCache = await res.json();
     renderCrypto();
-  } catch {
-    el.innerHTML = "<div style='padding:10px;color:#ff4d4d'>Failed to load prices</div>";
-  }
-}
-
-// NAV
-function showTab(tab, e) {
-  document.getElementById("crypto").style.display = tab === "crypto" ? "block" : "none";
-  document.getElementById("stocks").style.display = tab === "stocks" ? "block" : "none";
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  e.target.classList.add("active");
+    updateTicker();
+  } catch {}
 }
 
 // INIT
