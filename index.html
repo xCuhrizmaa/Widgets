@@ -152,9 +152,11 @@ body {
 
 <script>
 
-let expanded    = null;
-let cryptoCache = null;
-let sp500Cache  = null;
+// ── GLOBALS ────────────────────────────────────────────
+let expanded      = null;
+let cryptoCache   = null;
+let sp500Cache    = null;
+let lastTickerKey = "";  // prevents ticker reset when prices haven't changed
 
 // ── TICKER ENGINE ──────────────────────────────────────
 
@@ -235,6 +237,15 @@ async function updateTicker() {
     { name: "LINK", data: cryptoCache.chainlink },
     { name: "SOL",  data: cryptoCache.solana }
   ];
+
+  // Build a unique key — if nothing changed, skip re-render to avoid scroll reset
+  const newKey = cryptoItems.map(i =>
+    i.data ? `${i.name}:${i.data.usd}:${i.data.usd_24h_change}` : ""
+  ).join("|") +
+  (sp500Cache ? `|SP:${sp500Cache.price}:${sp500Cache.change}` : "");
+
+  if (newKey === lastTickerKey) return;
+  lastTickerKey = newKey;
 
   let html = "";
 
