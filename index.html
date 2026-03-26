@@ -61,6 +61,14 @@ body {
   font-size: 12px;
   margin-top: 3px;
 }
+
+iframe {
+  width: 100%;
+  height: 250px;
+  border: none;
+  border-radius: 10px;
+  margin-top: 10px;
+}
 </style>
 
 </head>
@@ -85,6 +93,8 @@ body {
 
 <script>
 
+let expanded = null;
+
 // FORMAT
 function formatPrice(p){
   if(p >= 1) return p.toFixed(2);
@@ -105,7 +115,14 @@ function getConfidence(change){
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
-// MARKET (USES BACKEND)
+// EXPAND
+function toggleExpand(symbol){
+  expanded = expanded === symbol ? null : symbol;
+  loadCrypto();
+  loadStocks();
+}
+
+// MARKET
 async function loadMarket(){
   try {
     const res = await fetch("/market");
@@ -136,7 +153,7 @@ async function loadFear(){
   }
 }
 
-// CRYPTO (USES BACKEND)
+// CRYPTO
 async function loadCrypto(){
   const el = document.getElementById("crypto");
   el.innerHTML = "Loading...";
@@ -165,7 +182,7 @@ async function loadCrypto(){
                   confidence > 40 ? "yellow" : "red";
 
       el.innerHTML += `
-        <div class="card">
+        <div class="card" onclick="toggleExpand('${symbol}')">
           <div class="row">
             <div>${symbol}</div>
             <div>
@@ -180,6 +197,10 @@ async function loadCrypto(){
           <div class="confidence ${color}">
             Confidence: ${confidence}%
           </div>
+
+          ${expanded === symbol ? `
+            <iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${symbol}USD"></iframe>
+          ` : ""}
         </div>
       `;
     });
@@ -191,13 +212,23 @@ async function loadCrypto(){
 
 // STOCKS
 function loadStocks(){
-  document.getElementById("stocks").innerHTML = `
-    <div class="card">AMD</div>
-    <div class="card">NVDA</div>
-    <div class="card">SOFI</div>
-    <div class="card">SCHD</div>
-    <div class="card">HOOD</div>
-  `;
+  const el = document.getElementById("stocks");
+  el.innerHTML = "";
+
+  ["AMD","NVDA","SOFI","SCHD","HOOD"].forEach(s => {
+    el.innerHTML += `
+      <div class="card" onclick="toggleExpand('${s}')">
+        <div class="row">
+          <div>${s}</div>
+          <div>Tap</div>
+        </div>
+
+        ${expanded === s ? `
+          <iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${s}"></iframe>
+        ` : ""}
+      </div>
+    `;
+  });
 }
 
 // NAV
