@@ -79,8 +79,8 @@ body {
   justify-content: space-between;
 }
 
-.green { color: #00ff88; }
-.red   { color: #ff4d4d; }
+.green  { color: #00ff88; }
+.red    { color: #ff4d4d; }
 .yellow { color: #ffd166; }
 
 .ai {
@@ -134,7 +134,6 @@ body {
 let expanded    = null;
 let cryptoCache = null;
 let sp500Cache  = null;
-let tickerBuilt = false; // tracks whether ticker has rendered at least once
 
 // ── UTILS ──────────────────────────────────────────────
 
@@ -154,15 +153,35 @@ function getConfidence(change) {
   return Math.max(0, Math.min(100, Math.round(50 + change * 4)));
 }
 
+// ── S&P 500 ────────────────────────────────────────────
+
+async function loadSP500() {
+  try {
+    const res  = await fetch("/sp500");
+    const data = await res.json();
+    console.log("SP500 response:", data);
+
+    if (data && typeof data.price === "number" && typeof data.change === "number") {
+      return data;
+    }
+
+    console.warn("SP500 response missing price/change:", data);
+    return null;
+
+  } catch (err) {
+    console.error("SP500 fetch error:", err);
+    return null;
+  }
+}
+
 // ── TICKER ─────────────────────────────────────────────
 
 async function updateTicker() {
   if (!cryptoCache) return;
 
-  // Always try to fetch S&P 500 if we don't have it yet
-  if (!sp500Cache) {
-    sp500Cache = await loadSP500();
-  }
+  // Always re-fetch S&P so it retries if it failed before
+  const freshSP = await loadSP500();
+  if (freshSP) sp500Cache = freshSP;
 
   const cryptoItems = [
     { name: "BTC",  data: cryptoCache.bitcoin },
@@ -174,7 +193,6 @@ async function updateTicker() {
 
   let html = "";
 
-  // Crypto entries
   cryptoItems.forEach(({ name, data: d }) => {
     if (!d) return;
     const change = d.usd_24h_change;
@@ -189,8 +207,7 @@ async function updateTicker() {
     `;
   });
 
-  // S&P 500 entry — included when available, skipped silently if not
-  if (sp500Cache && sp500Cache.price) {
+  if (sp500Cache) {
     const arrow = sp500Cache.change >= 0 ? "▲" : "▼";
     const color = sp500Cache.change >= 0 ? "#00ff88" : "#ff4d4d";
     html += `
@@ -200,27 +217,11 @@ async function updateTicker() {
         <span style="color:${color}">${arrow} ${Math.abs(sp500Cache.change).toFixed(2)}%</span>
       </span>
     `;
+  } else {
+    console.warn("SP500 not available for ticker");
   }
 
-  // Always re-render — the key guard was causing the ticker to go blank
-  // when sp500 loaded after crypto. Safe to re-render since animation resets
-  // are invisible at normal scroll speed.
   document.getElementById("tickerTrack").innerHTML = html + html;
-  tickerBuilt = true;
-}
-
-// ── S&P 500 ────────────────────────────────────────────
-
-async function loadSP500() {
-  try {
-    const res = await fetch("/sp500");
-    const d   = await res.json();
-    // Validate we got real data back
-    if (d && typeof d.price === "number") return d;
-    return null;
-  } catch {
-    return null;
-  }
 }
 
 // ── EXPAND ─────────────────────────────────────────────
