@@ -45,7 +45,6 @@ body {
 .row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 .green { color: #00ff88; }
@@ -62,22 +61,9 @@ body {
   font-size: 12px;
   margin-top: 3px;
 }
-
-.star {
-  cursor: pointer;
-  margin-left: 6px;
-}
-
-iframe {
-  width: 100%;
-  height: 250px;
-  border: none;
-  border-radius: 10px;
-  margin-top: 10px;
-}
 </style>
-</head>
 
+</head>
 <body>
 
 <div class="header">
@@ -99,56 +85,30 @@ iframe {
 
 <script>
 
-// CONFIG
-const ids = "bitcoin,hedera-hashgraph,ripple,chainlink,solana";
-
-let watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
-let expanded = null;
-
-// FORMAT PRICE
+// FORMAT
 function formatPrice(p){
-  if(p >= 1000) return p.toLocaleString(undefined,{maximumFractionDigits:2});
-  if(p >= 1) return p.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4});
-  return p.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:6});
+  if(p >= 1) return p.toFixed(2);
+  return p.toFixed(5);
 }
 
-// AI INSIGHT
+// AI
 function getInsight(change){
   if(change > 5) return "🚀 Strong upward momentum";
   if(change > 2) return "📈 Uptrend forming";
   if(change < -5) return "🔻 Strong downtrend";
-  if(change < -2) return "⚠️ Pullback / weakness";
+  if(change < -2) return "⚠️ Pullback";
   return "➖ Consolidating";
 }
 
-// CONFIDENCE
 function getConfidence(change){
   let score = 50 + (change * 4);
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
-// WATCHLIST
-function toggleWatch(symbol,e){
-  e.stopPropagation();
-  if(watchlist.includes(symbol)){
-    watchlist = watchlist.filter(s=>s!==symbol);
-  } else {
-    watchlist.push(symbol);
-  }
-  localStorage.setItem("watchlist", JSON.stringify(watchlist));
-  loadCrypto();
-}
-
-// EXPAND
-function toggleExpand(symbol){
-  expanded = expanded === symbol ? null : symbol;
-  loadCrypto();
-}
-
-// MARKET DATA
+// MARKET (USES BACKEND)
 async function loadMarket(){
   try {
-    const res = await fetch("https://api.coingecko.com/api/v3/global");
+    const res = await fetch("/market");
     const d = await res.json();
 
     document.getElementById("marketCap").textContent =
@@ -162,12 +122,10 @@ async function loadMarket(){
 
   } catch {
     document.getElementById("marketCap").textContent = "Unavailable";
-    document.getElementById("marketChange").textContent = "--";
-    document.getElementById("btcDom").textContent = "--";
   }
 }
 
-// FEAR GREED
+// FEAR
 async function loadFear(){
   try {
     const r = await fetch("https://api.alternative.me/fng/");
@@ -178,16 +136,13 @@ async function loadFear(){
   }
 }
 
-// CRYPTO (FIXED)
+// CRYPTO (USES BACKEND)
 async function loadCrypto(){
   const el = document.getElementById("crypto");
   el.innerHTML = "Loading...";
 
   try {
-    const res = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
-    );
-
+    const res = await fetch("/crypto");
     const data = await res.json();
 
     const map = {
@@ -210,16 +165,11 @@ async function loadCrypto(){
                   confidence > 40 ? "yellow" : "red";
 
       el.innerHTML += `
-        <div class="card" onclick="toggleExpand('${symbol}')">
+        <div class="card">
           <div class="row">
+            <div>${symbol}</div>
             <div>
-              ${symbol}
-              <span class="star" onclick="toggleWatch('${symbol}',event)">
-                ${watchlist.includes(symbol) ? "⭐" : "☆"}
-              </span>
-            </div>
-            <div>
-              $${formatPrice(d.usd)} <br>
+              $${formatPrice(d.usd)}<br>
               <span class="${d.usd_24h_change >= 0 ? 'green':'red'}">
                 ${d.usd_24h_change.toFixed(2)}%
               </span>
@@ -230,31 +180,24 @@ async function loadCrypto(){
           <div class="confidence ${color}">
             Confidence: ${confidence}%
           </div>
-
-          ${expanded===symbol ? `
-            <iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${symbol}"></iframe>
-          ` : ""}
         </div>
       `;
     });
 
-  } catch (err) {
-    console.log(err);
+  } catch {
     el.innerHTML = "Failed to load prices";
   }
 }
 
 // STOCKS
 function loadStocks(){
-  const el=document.getElementById("stocks");
-  el.innerHTML="";
-  ["AMD","NVDA","SOFI","SCHD","HOOD"].forEach(s=>{
-    el.innerHTML+=`
-      <div class="card" onclick="toggleExpand('${s}')">
-        <div class="row"><div>${s}</div><div>Tap</div></div>
-        ${expanded===s?`<iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${s}"></iframe>`:""}
-      </div>`;
-  });
+  document.getElementById("stocks").innerHTML = `
+    <div class="card">AMD</div>
+    <div class="card">NVDA</div>
+    <div class="card">SOFI</div>
+    <div class="card">SCHD</div>
+    <div class="card">HOOD</div>
+  `;
 }
 
 // NAV
@@ -270,12 +213,6 @@ loadMarket();
 loadFear();
 loadCrypto();
 loadStocks();
-
-setInterval(()=>{
-  loadMarket();
-  loadFear();
-  loadCrypto();
-},20000);
 
 </script>
 
