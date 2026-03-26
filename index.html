@@ -12,34 +12,28 @@ body {
   font-family: -apple-system, BlinkMacSystemFont;
 }
 
+/* TICKER — JS driven, no CSS animation */
 .ticker {
   width: 100%;
   overflow: hidden;
   background: #0b0f14;
   border-bottom: 1px solid #222;
   padding: 8px 0;
+  cursor: default;
 }
 
 .ticker-track {
   display: flex;
-  width: max-content;
-  animation: scrollTicker 25s linear infinite;
+  will-change: transform;
   font-size: 13px;
   white-space: nowrap;
-}
-
-.ticker-track:hover {
-  animation-play-state: paused;
-}
-
-@keyframes scrollTicker {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-25%); }
+  width: max-content;
 }
 
 .ticker-item {
-  margin-right: 40px;
+  margin-right: 50px;
   flex-shrink: 0;
+  display: inline-block;
 }
 
 .header { padding: 15px; border-bottom: 1px solid #222; }
@@ -106,7 +100,7 @@ body {
 
 <body>
 
-<div class="ticker">
+<div class="ticker" id="tickerOuter">
   <div id="tickerTrack" class="ticker-track">
     <span class="ticker-item" style="color:#888">Loading market data...</span>
   </div>
@@ -134,6 +128,37 @@ body {
 let expanded    = null;
 let cryptoCache = null;
 let sp500Cache  = null;
+
+// ── TICKER ENGINE (JS scroll — works on any screen width) ──
+let tickerX       = 0;
+let tickerHalfW   = 0;
+let tickerPaused  = false;
+let tickerRAF     = null;
+const TICKER_SPEED = 0.5; // px per frame — increase to go faster
+
+function tickerStep() {
+  if (!tickerPaused) {
+    tickerX -= TICKER_SPEED;
+    // Once we've scrolled one full half-width, reset silently to 0
+    if (tickerHalfW > 0 && tickerX <= -tickerHalfW) {
+      tickerX = 0;
+    }
+    document.getElementById("tickerTrack").style.transform = `translateX(${tickerX}px)`;
+  }
+  tickerRAF = requestAnimationFrame(tickerStep);
+}
+
+// Pause on touch/hover so user can read
+document.getElementById("tickerOuter").addEventListener("touchstart", () => { tickerPaused = true; });
+document.getElementById("tickerOuter").addEventListener("touchend",   () => { tickerPaused = false; });
+document.getElementById("tickerOuter").addEventListener("mouseenter", () => { tickerPaused = true; });
+document.getElementById("tickerOuter").addEventListener("mouseleave", () => { tickerPaused = false; });
+
+function startTicker() {
+  if (tickerRAF) cancelAnimationFrame(tickerRAF);
+  tickerX = 0;
+  tickerRAF = requestAnimationFrame(tickerStep);
+}
 
 // ── UTILS ──────────────────────────────────────────────
 
@@ -171,12 +196,11 @@ async function loadSP500() {
   }
 }
 
-// ── TICKER ─────────────────────────────────────────────
+// ── BUILD TICKER ───────────────────────────────────────
 
 async function updateTicker() {
   if (!cryptoCache) return;
 
-  // Always retry S&P — keeps trying each refresh until it works
   const freshSP = await loadSP500();
   if (freshSP) sp500Cache = freshSP;
 
@@ -216,8 +240,17 @@ async function updateTicker() {
     `;
   }
 
-  // 4x repeat + 25% animation = seamless loop on any screen width, no stutter
-  document.getElementById("tickerTrack").innerHTML = html + html + html + html;
+  const track = document.getElementById("tickerTrack");
+
+  // Duplicate content so loop is seamless
+  track.innerHTML = html + html;
+
+  // Measure the half-width AFTER inserting content so JS knows when to reset
+  // Use a small delay to let the browser paint and calculate widths
+  setTimeout(() => {
+    tickerHalfW = track.scrollWidth / 2;
+    tickerX = 0;
+  }, 100);
 }
 
 // ── EXPAND ─────────────────────────────────────────────
@@ -399,6 +432,7 @@ function showTab(tab, e) {
 
 // ── INIT ───────────────────────────────────────────────
 
+startTicker(); // Start the scroll engine immediately
 loadMarket();
 loadFear();
 loadCrypto();
