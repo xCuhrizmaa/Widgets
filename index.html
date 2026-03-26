@@ -48,10 +48,6 @@ body {
   align-items: center;
 }
 
-.left { display: flex; flex-direction: column; }
-
-.sparkline { width: 80px; height: 30px; }
-
 .green { color: #00ff88; }
 .red { color: #ff4d4d; }
 .yellow { color: #ffd166; }
@@ -103,56 +99,32 @@ iframe {
 
 <script>
 
-const cryptoList = [
-  { id:"bitcoin", symbol:"BTC" },
-  { id:"hedera-hashgraph", symbol:"HBAR" },
-  { id:"ripple", symbol:"XRP" },
-  { id:"chainlink", symbol:"LINK" },
-  { id:"solana", symbol:"SOL" }
-];
+// CONFIG
+const ids = "bitcoin,hedera-hashgraph,ripple,chainlink,solana";
 
 let watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
 let expanded = null;
 
-// FORMAT
+// FORMAT PRICE
 function formatPrice(p){
-  if(p>=1000) return p.toLocaleString(undefined,{maximumFractionDigits:2});
-  if(p>=1) return p.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4});
+  if(p >= 1000) return p.toLocaleString(undefined,{maximumFractionDigits:2});
+  if(p >= 1) return p.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4});
   return p.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:6});
 }
 
-// SPARK
-function spark(prices,up){
-  const max=Math.max(...prices), min=Math.min(...prices);
-  const pts=prices.map((p,i)=>{
-    const x=(i/(prices.length-1))*100;
-    const y=30-((p-min)/(max-min))*30;
-    return `${x},${y}`;
-  }).join(" ");
-  return `<svg class="sparkline" viewBox="0 0 100 30">
-    <polyline fill="none" stroke="${up?"#00ff88":"#ff4d4d"}" stroke-width="2" points="${pts}"/>
-  </svg>`;
-}
-
-// 🧠 INSIGHT
-function getInsight(change, momentum){
-  if(change > 5 && momentum > 0) return "🚀 Strong upward momentum";
+// AI INSIGHT
+function getInsight(change){
+  if(change > 5) return "🚀 Strong upward momentum";
   if(change > 2) return "📈 Uptrend forming";
   if(change < -5) return "🔻 Strong downtrend";
   if(change < -2) return "⚠️ Pullback / weakness";
   return "➖ Consolidating";
 }
 
-// 🎯 CONFIDENCE SCORE
-function getConfidence(change, momentum){
-  let score = 50;
-
-  score += change * 3;
-  score += momentum * 10;
-
-  score = Math.max(0, Math.min(100, score));
-
-  return Math.round(score);
+// CONFIDENCE
+function getConfidence(change){
+  let score = 50 + (change * 4);
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 // WATCHLIST
@@ -173,82 +145,103 @@ function toggleExpand(symbol){
   loadCrypto();
 }
 
-// MARKET
+// MARKET DATA
 async function loadMarket(){
-  const r = await fetch("https://api.coingecko.com/api/v3/global");
-  const d = await r.json();
-  document.getElementById("marketCap").textContent="$"+(d.data.total_market_cap.usd/1e12).toFixed(2)+"T";
-  document.getElementById("marketChange").textContent=d.data.market_cap_change_percentage_24h_usd.toFixed(2)+"%";
-  document.getElementById("btcDom").textContent=d.data.market_cap_percentage.btc.toFixed(1)+"%";
+  try {
+    const res = await fetch("https://api.coingecko.com/api/v3/global");
+    const d = await res.json();
+
+    document.getElementById("marketCap").textContent =
+      "$" + (d.data.total_market_cap.usd / 1e12).toFixed(2) + "T";
+
+    document.getElementById("marketChange").textContent =
+      d.data.market_cap_change_percentage_24h_usd.toFixed(2) + "%";
+
+    document.getElementById("btcDom").textContent =
+      d.data.market_cap_percentage.btc.toFixed(1) + "%";
+
+  } catch {
+    document.getElementById("marketCap").textContent = "Unavailable";
+    document.getElementById("marketChange").textContent = "--";
+    document.getElementById("btcDom").textContent = "--";
+  }
 }
 
-// FEAR
+// FEAR GREED
 async function loadFear(){
-  const r = await fetch("https://api.alternative.me/fng/");
-  const d = await r.json();
-  document.getElementById("fearValue").textContent=d.data[0].value;
+  try {
+    const r = await fetch("https://api.alternative.me/fng/");
+    const d = await r.json();
+    document.getElementById("fearValue").textContent = d.data[0].value;
+  } catch {
+    document.getElementById("fearValue").textContent = "--";
+  }
 }
 
-// CRYPTO
+// CRYPTO (FIXED)
 async function loadCrypto(){
-  const el=document.getElementById("crypto");
-  el.innerHTML="";
+  const el = document.getElementById("crypto");
+  el.innerHTML = "Loading...";
 
-  const results = await Promise.all(cryptoList.map(async c=>{
-    const r = await fetch(`https://api.coingecko.com/api/v3/coins/${c.id}/market_chart?vs_currency=usd&days=1`);
-    const d = await r.json();
+  try {
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
+    );
 
-    const prices=d.prices.map(p=>p[1]);
-    const current=prices.at(-1);
-    const first=prices[0];
-    const mid=prices[Math.floor(prices.length/2)];
+    const data = await res.json();
 
-    const change=((current-first)/first)*100;
-    const momentum=(current-mid)/mid;
-
-    return {
-      symbol:c.symbol,
-      prices,
-      current,
-      change,
-      insight:getInsight(change, momentum),
-      confidence:getConfidence(change, momentum)
+    const map = {
+      BTC: data.bitcoin,
+      HBAR: data["hedera-hashgraph"],
+      XRP: data.ripple,
+      LINK: data.chainlink,
+      SOL: data.solana
     };
-  }));
 
-  results.forEach(c=>{
-    let colorClass = c.confidence > 70 ? "green" :
-                     c.confidence > 40 ? "yellow" : "red";
+    el.innerHTML = "";
 
-    el.innerHTML+=`
-      <div class="card" onclick="toggleExpand('${c.symbol}')">
-        <div class="row">
-          <div class="left">
+    Object.entries(map).forEach(([symbol, d]) => {
+      if (!d) return;
+
+      const insight = getInsight(d.usd_24h_change);
+      const confidence = getConfidence(d.usd_24h_change);
+
+      let color = confidence > 70 ? "green" :
+                  confidence > 40 ? "yellow" : "red";
+
+      el.innerHTML += `
+        <div class="card" onclick="toggleExpand('${symbol}')">
+          <div class="row">
             <div>
-              ${c.symbol}
-              <span class="star" onclick="toggleWatch('${c.symbol}',event)">
-                ${watchlist.includes(c.symbol)?"⭐":"☆"}
+              ${symbol}
+              <span class="star" onclick="toggleWatch('${symbol}',event)">
+                ${watchlist.includes(symbol) ? "⭐" : "☆"}
               </span>
             </div>
-            ${spark(c.prices.slice(-20),c.change>=0)}
+            <div>
+              $${formatPrice(d.usd)} <br>
+              <span class="${d.usd_24h_change >= 0 ? 'green':'red'}">
+                ${d.usd_24h_change.toFixed(2)}%
+              </span>
+            </div>
           </div>
-          <div>
-            <div>$${formatPrice(c.current)}</div>
-            <div class="${c.change>=0?'green':'red'}">${c.change.toFixed(2)}%</div>
+
+          <div class="ai">${insight}</div>
+          <div class="confidence ${color}">
+            Confidence: ${confidence}%
           </div>
-        </div>
 
-        <div class="ai">${c.insight}</div>
-        <div class="confidence ${colorClass}">
-          Confidence: ${c.confidence}%
+          ${expanded===symbol ? `
+            <iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${symbol}"></iframe>
+          ` : ""}
         </div>
+      `;
+    });
 
-        ${expanded===c.symbol?`
-          <iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=${c.symbol}"></iframe>
-        `:""}
-      </div>
-    `;
-  });
+  } catch (err) {
+    console.log(err);
+    el.innerHTML = "Failed to load prices";
+  }
 }
 
 // STOCKS
