@@ -1,9 +1,19 @@
 import express from "express";
 import fetch from "node-fetch";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 
-// CRYPTO ENDPOINT
+// Fix for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ✅ Serve your frontend (THIS FIXES "Cannot GET /")
+app.use(express.static(__dirname));
+
+
+// 🔥 CRYPTO ENDPOINT
 app.get("/crypto", async (req, res) => {
   try {
     const response = await fetch(
@@ -18,7 +28,8 @@ app.get("/crypto", async (req, res) => {
   }
 });
 
-// MARKET ENDPOINT
+
+// 🔥 MARKET ENDPOINT
 app.get("/market", async (req, res) => {
   try {
     const response = await fetch(
@@ -33,6 +44,8 @@ app.get("/market", async (req, res) => {
   }
 });
 
+
+// START SERVER
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server running");
 });
