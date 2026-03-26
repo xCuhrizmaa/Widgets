@@ -23,7 +23,7 @@ body {
 .ticker-track {
   display: flex;
   width: max-content;
-  animation: scrollTicker 20s linear infinite;
+  animation: scrollTicker 25s linear infinite;
   font-size: 13px;
   white-space: nowrap;
 }
@@ -34,7 +34,7 @@ body {
 
 @keyframes scrollTicker {
   0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  100% { transform: translateX(-25%); }
 }
 
 .ticker-item {
@@ -160,14 +160,11 @@ async function loadSP500() {
     const res  = await fetch("/sp500");
     const data = await res.json();
     console.log("SP500 response:", data);
-
     if (data && typeof data.price === "number" && typeof data.change === "number") {
       return data;
     }
-
-    console.warn("SP500 response missing price/change:", data);
+    console.warn("SP500 bad response:", data);
     return null;
-
   } catch (err) {
     console.error("SP500 fetch error:", err);
     return null;
@@ -179,7 +176,7 @@ async function loadSP500() {
 async function updateTicker() {
   if (!cryptoCache) return;
 
-  // Always re-fetch S&P so it retries if it failed before
+  // Always retry S&P — keeps trying each refresh until it works
   const freshSP = await loadSP500();
   if (freshSP) sp500Cache = freshSP;
 
@@ -217,11 +214,10 @@ async function updateTicker() {
         <span style="color:${color}">${arrow} ${Math.abs(sp500Cache.change).toFixed(2)}%</span>
       </span>
     `;
-  } else {
-    console.warn("SP500 not available for ticker");
   }
 
-  document.getElementById("tickerTrack").innerHTML = html + html;
+  // 4x repeat + 25% animation = seamless loop on any screen width, no stutter
+  document.getElementById("tickerTrack").innerHTML = html + html + html + html;
 }
 
 // ── EXPAND ─────────────────────────────────────────────
