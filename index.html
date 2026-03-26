@@ -12,7 +12,6 @@ body {
   font-family: -apple-system, BlinkMacSystemFont;
 }
 
-/* TICKER — JS driven, no CSS animation */
 .ticker {
   width: 100%;
   overflow: hidden;
@@ -94,6 +93,24 @@ body {
   overflow: hidden;
   height: 250px;
 }
+
+.news-card {
+  background: #161b22;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.news-title {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.news-source {
+  font-size: 11px;
+  color: #888;
+}
 </style>
 
 </head>
@@ -123,32 +140,39 @@ body {
 <div id="crypto" class="list"></div>
 <div id="stocks" class="list" style="display:none;"></div>
 
+<div style="padding:15px">
+  <div style="font-weight:bold;margin-bottom:10px;">🪙 Crypto News</div>
+  <div id="cryptoNews"></div>
+</div>
+
+<div style="padding:15px">
+  <div style="font-weight:bold;margin-bottom:10px;">📈 Stock News</div>
+  <div id="stockNews"></div>
+</div>
+
 <script>
 
 let expanded    = null;
 let cryptoCache = null;
 let sp500Cache  = null;
 
-// ── TICKER ENGINE (JS scroll — works on any screen width) ──
-let tickerX       = 0;
-let tickerHalfW   = 0;
-let tickerPaused  = false;
-let tickerRAF     = null;
-const TICKER_SPEED = 0.5; // px per frame — increase to go faster
+// ── TICKER ENGINE ──────────────────────────────────────
+
+let tickerX      = 0;
+let tickerHalfW  = 0;
+let tickerPaused = false;
+let tickerRAF    = null;
+const TICKER_SPEED = 0.5;
 
 function tickerStep() {
   if (!tickerPaused) {
     tickerX -= TICKER_SPEED;
-    // Once we've scrolled one full half-width, reset silently to 0
-    if (tickerHalfW > 0 && tickerX <= -tickerHalfW) {
-      tickerX = 0;
-    }
+    if (tickerHalfW > 0 && tickerX <= -tickerHalfW) tickerX = 0;
     document.getElementById("tickerTrack").style.transform = `translateX(${tickerX}px)`;
   }
   tickerRAF = requestAnimationFrame(tickerStep);
 }
 
-// Pause on touch/hover so user can read
 document.getElementById("tickerOuter").addEventListener("touchstart", () => { tickerPaused = true; });
 document.getElementById("tickerOuter").addEventListener("touchend",   () => { tickerPaused = false; });
 document.getElementById("tickerOuter").addEventListener("mouseenter", () => { tickerPaused = true; });
@@ -196,7 +220,7 @@ async function loadSP500() {
   }
 }
 
-// ── BUILD TICKER ───────────────────────────────────────
+// ── TICKER BUILD ───────────────────────────────────────
 
 async function updateTicker() {
   if (!cryptoCache) return;
@@ -241,12 +265,8 @@ async function updateTicker() {
   }
 
   const track = document.getElementById("tickerTrack");
-
-  // Duplicate content so loop is seamless
   track.innerHTML = html + html;
 
-  // Measure the half-width AFTER inserting content so JS knows when to reset
-  // Use a small delay to let the browser paint and calculate widths
   setTimeout(() => {
     tickerHalfW = track.scrollWidth / 2;
     tickerX = 0;
@@ -421,6 +441,40 @@ async function loadCrypto() {
   }
 }
 
+// ── NEWS ───────────────────────────────────────────────
+
+async function loadCryptoNews() {
+  const el = document.getElementById("cryptoNews");
+  try {
+    const r = await fetch("https://min-api.cryptocompare.com/data/v2/news/?lang=EN");
+    const d = await r.json();
+    el.innerHTML = d.Data.slice(0, 5).map(a => `
+      <div class="news-card" onclick="window.open('${a.url}', '_blank')">
+        <div class="news-title">${a.title}</div>
+        <div class="news-source">${a.source}</div>
+      </div>
+    `).join("");
+  } catch {
+    el.innerHTML = "<div style='color:#888'>Failed to load news</div>";
+  }
+}
+
+async function loadStockNews() {
+  const el = document.getElementById("stockNews");
+  try {
+    const r = await fetch("https://financialmodelingprep.com/api/v3/stock_news?limit=5&apikey=demo");
+    const d = await r.json();
+    el.innerHTML = d.map(a => `
+      <div class="news-card" onclick="window.open('${a.url}', '_blank')">
+        <div class="news-title">${a.title}</div>
+        <div class="news-source">${a.site}</div>
+      </div>
+    `).join("");
+  } catch {
+    el.innerHTML = "<div style='color:#888'>Failed to load news</div>";
+  }
+}
+
 // ── NAV ────────────────────────────────────────────────
 
 function showTab(tab, e) {
@@ -432,15 +486,19 @@ function showTab(tab, e) {
 
 // ── INIT ───────────────────────────────────────────────
 
-startTicker(); // Start the scroll engine immediately
+startTicker();
 loadMarket();
 loadFear();
 loadCrypto();
 renderStocks();
+loadCryptoNews();
+loadStockNews();
 
 setInterval(() => {
   loadCrypto();
   loadMarket();
+  loadCryptoNews();
+  loadStockNews();
 }, 60000);
 
 </script>
