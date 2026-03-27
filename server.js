@@ -12,7 +12,7 @@ app.use(express.static(__dirname));
 
 const HEADERS = {
   "Accept": "application/json",
-  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+  "User-Agent": "Mozilla/5.0"
 };
 
 // ── CACHE ──────────────────────────────────────────────
@@ -28,9 +28,7 @@ let sp500Time   = 0;
 // ── CRYPTO ─────────────────────────────────────────────
 app.get("/crypto", async (req, res) => {
   const now = Date.now();
-  if (cryptoCache && now - cryptoTime < 60000) {
-    return res.json(cryptoCache);
-  }
+  if (cryptoCache && now - cryptoTime < 60000) return res.json(cryptoCache);
 
   try {
     const r = await fetch(
@@ -39,11 +37,9 @@ app.get("/crypto", async (req, res) => {
       "&vs_currencies=usd&include_24hr_change=true",
       { headers: HEADERS }
     );
-
     const data = await r.json();
     cryptoCache = data;
     cryptoTime  = now;
-
     res.json(data);
   } catch (err) {
     console.log("Crypto error:", err.message);
@@ -55,20 +51,16 @@ app.get("/crypto", async (req, res) => {
 // ── MARKET ─────────────────────────────────────────────
 app.get("/market", async (req, res) => {
   const now = Date.now();
-  if (marketCache && now - marketTime < 60000) {
-    return res.json(marketCache);
-  }
+  if (marketCache && now - marketTime < 60000) return res.json(marketCache);
 
   try {
     const r = await fetch(
       "https://api.coingecko.com/api/v3/global",
       { headers: HEADERS }
     );
-
     const data = await r.json();
     marketCache = data;
     marketTime  = now;
-
     res.json(data);
   } catch (err) {
     console.log("Market error:", err.message);
@@ -77,48 +69,87 @@ app.get("/market", async (req, res) => {
   }
 });
 
-// ── S&P 500 (FIXED — FMP API) ──────────────────────────
+// ── S&P 500 (kept as-is, even if flaky) ────────────────
 app.get("/sp500", async (req, res) => {
   const now = Date.now();
-
-  // Cache (5 min)
   if (sp500Cache && now - sp500Time < 300000) {
     console.log("SP500 cache hit:", sp500Cache);
     return res.json(sp500Cache);
   }
 
+  const attempts = [
+    async () => {
+      const r = await fetch(
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=2d",
+        { headers: HEADERS }
+      );
+      const data = await r.json();
+      const meta = data?.chart?.result?.[0]?.meta;
+      if (!meta?.regularMarketPrice) throw new Error("no data");
+      return {
+        price: meta.regularMarketPrice,
+        change: ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose) * 100
+      };
+    },
+    async () => {
+      const r = await fetch(
+        "https://query2.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC",
+        { headers: HEADERS }
+      );
+      const data = await r.json();
+      const q = data?.quoteResponse?.result?.[0];
+      if (!q?.regularMarketPrice) throw new Error("no data");
+      return { price: q.regularMarketPrice, change: q.regularMarketChangePercent };
+    }
+  ];
+
+  for (const attempt of attempts) {
+    try {
+      const result = await attempt();
+      sp500Cache = result;
+      sp500Time  = now;
+      console.log("SP500 success:", result);
+      return res.json(result);
+    } catch (e) {
+      console.log("SP500 attempt failed:", e.message);
+    }
+  }
+
+  if (sp500Cache) {
+    console.log("SP500 returning stale cache");
+    return res.json(sp500Cache);
+  }
+
+  res.status(500).json({ error: "All SP500 sources failed" });
+});
+
+// ── ✅ CRYPTO NEWS (NEW FIX) ────────────────────────────
+app.get("/crypto-news", async (req, res) => {
   try {
     const r = await fetch(
-      "https://financialmodelingprep.com/api/v3/quote/%5EGSPC?apikey=demo"
+      "https://min-api.cryptocompare.com/data/v2/news/?lang=EN",
+      { headers: HEADERS }
     );
-
     const data = await r.json();
-
-    if (!data?.[0]?.price) {
-      throw new Error("Invalid FMP response");
-    }
-
-    const result = {
-      price: data[0].price,
-      change: data[0].changesPercentage
-    };
-
-    sp500Cache = result;
-    sp500Time  = now;
-
-    console.log("SP500 success (FMP):", result);
-
-    return res.json(result);
-
+    res.json(data);
   } catch (err) {
-    console.log("SP500 FMP failed:", err.message);
+    console.log("Crypto news error:", err.message);
+    res.status(500).json({ error: "Failed crypto news" });
+  }
+});
 
-    if (sp500Cache) {
-      console.log("Returning stale SP500 cache");
-      return res.json(sp500Cache);
-    }
-
-    return res.status(500).json({ error: "Failed to fetch S&P 500" });
+// ── ✅ STOCK NEWS (NEW FIX) ─────────────────────────────
+app.get("/stock-news", async (req, res) => {
+  try {
+    const r = await fetch(
+      "https://financialmodelingprep.com/api/v3/stock_news?limit=5&apikey=demo",
+      { headers: HEADERS }
+    );
+    const data = await r.json();
+    res.json(data);
+  } catch (err) {
+    console.log("Stock news error:", err.message);
+    res.status(500).json({ error: "Failed stock news" });
   }
 });
 
