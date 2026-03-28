@@ -111,6 +111,36 @@ body {
   font-size: 11px;
   color: #888;
 }
+
+/* ── VERSE STYLES ───────────────────────────── */
+
+.verse-card {
+  background: #161b22;
+  margin: 10px 15px;
+  padding: 14px;
+  border-radius: 12px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeSlide 0.6s ease forwards;
+}
+
+@keyframes fadeSlide {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.verse-text {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.verse-ref {
+  font-size: 12px;
+  color: #888;
+}
 </style>
 
 </head>
@@ -131,6 +161,8 @@ body {
     <div class="header-card"><div class="label">Fear & Greed</div><div id="fearValue" class="value">...</div></div>
   </div>
 </div>
+
+<div id="dailyVerse"></div>
 
 <div class="tabs">
   <div class="tab active" onclick="showTab('crypto', event)">Crypto</div>
@@ -495,6 +527,33 @@ function showTab(tab, e) {
   e.target.classList.add("active");
 }
 
+// ── DAILY VERSE ───────────────────────────────────────
+
+function loadVerse() {
+
+  const verses = [
+    { text: "Commit your actions to the Lord, and your plans will succeed.", ref: "Proverbs 16:3 (NLT)" },
+    { text: "Work willingly at whatever you do, as though you were working for the Lord.", ref: "Colossians 3:23 (NLT)" },
+    { text: "The plans of the diligent lead surely to profit.", ref: "Proverbs 21:5 (NLT)" },
+    { text: "A faithful person will be richly blessed.", ref: "Proverbs 28:20 (NLT)" },
+    { text: "Whoever can be trusted with very little can also be trusted with much.", ref: "Luke 16:10 (NLT)" },
+    { text: "Lazy people want much but get little, but those who work hard will prosper.", ref: "Proverbs 13:4 (NLT)" },
+    { text: "Honor the Lord with your wealth.", ref: "Proverbs 3:9 (NLT)" },
+    { text: "Good planning and hard work lead to prosperity.", ref: "Proverbs 21:5 (NLT)" },
+    { text: "The blessing of the Lord makes a person rich.", ref: "Proverbs 10:22 (NLT)" }
+  ];
+
+  const index = new Date().getDate() % verses.length;
+  const v = verses[index];
+
+  document.getElementById("dailyVerse").innerHTML = `
+    <div class="verse-card">
+      <div class="verse-text">"${v.text}"</div>
+      <div class="verse-ref">— ${v.ref}</div>
+    </div>
+  `;
+}
+
 // ── INIT ───────────────────────────────────────────────
 
 startTicker();
@@ -504,6 +563,7 @@ loadCrypto();
 renderStocks();
 loadCryptoNews();
 loadStockNews();
+loadVerse();
 
 setInterval(() => {
   loadCrypto();
