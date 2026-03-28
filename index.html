@@ -172,6 +172,51 @@ body {
   justify-content: space-between;
   margin-bottom: 4px;
 }
+
+/* ── CALCULATOR / SEARCH INPUT STYLES ──────── */
+
+.dash-input {
+  width: 100%;
+  background: #0d1117;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px;
+  color: white;
+  font-size: 14px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+.dash-input:focus {
+  border-color: #00ff88;
+}
+
+.dash-select {
+  width: 100%;
+  background: #0d1117;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px;
+  color: white;
+  font-size: 14px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+.dash-select:focus {
+  border-color: #00ff88;
+}
+
+.calc-result {
+  background: #0d1117;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.8;
+}
 </style>
 
 </head>
@@ -199,7 +244,24 @@ body {
 
 <div style="padding:15px">
   <div style="font-weight:bold;margin-bottom:10px;">🧠 AI Market Insight</div>
-  <div id="aiInsight" class="news-card">Loading insight...</div>
+  <div id="aiInsight" class="news-card" style="cursor:default;">Loading insight...</div>
+</div>
+
+<!-- ── CRYPTO CALCULATOR ─────────────────────── -->
+<div style="padding:15px">
+  <div style="font-weight:bold;margin-bottom:10px;">🧮 Crypto Calculator</div>
+  <div class="news-card" style="cursor:default;">
+    <select id="calcCoin" class="dash-select">
+      <option value="bitcoin">BTC</option>
+      <option value="hedera-hashgraph">HBAR</option>
+      <option value="ripple">XRP</option>
+      <option value="chainlink">LINK</option>
+      <option value="solana">SOL</option>
+    </select>
+    <input id="calcAmount" class="dash-input" placeholder="Holdings (e.g. 500)" type="number" />
+    <input id="calcTarget" class="dash-input" placeholder="Target Price (e.g. 3.45)" type="number" />
+    <div id="calcResult" class="calc-result" style="display:none;"></div>
+  </div>
 </div>
 
 <div class="tabs">
@@ -215,9 +277,23 @@ body {
   <div id="cryptoNews"></div>
 </div>
 
+<!-- ── CRYPTO SEARCH ─────────────────────────── -->
+<div style="padding:15px">
+  <div style="font-weight:bold;margin-bottom:10px;">🔍 Search Any Crypto</div>
+  <input id="cryptoSearch" class="dash-input" placeholder="e.g. dogecoin, cardano..." />
+  <div id="cryptoSearchResult"></div>
+</div>
+
 <div style="padding:15px">
   <div style="font-weight:bold;margin-bottom:10px;">📈 Stock News</div>
   <div id="stockNews"></div>
+</div>
+
+<!-- ── STOCK SEARCH ──────────────────────────── -->
+<div style="padding:15px">
+  <div style="font-weight:bold;margin-bottom:10px;">📊 Search Any Stock</div>
+  <input id="stockSearch" class="dash-input" placeholder="e.g. AAPL, TSLA, MSFT..." />
+  <div id="stockSearchResult"></div>
 </div>
 
 <script>
@@ -280,11 +356,9 @@ async function loadSP500() {
   try {
     const res  = await fetch("/sp500");
     const data = await res.json();
-    console.log("SP500 response:", data);
     if (data && typeof data.price === "number" && typeof data.change === "number") {
       return data;
     }
-    console.warn("SP500 bad response:", data);
     return null;
   } catch (err) {
     console.error("SP500 fetch error:", err);
@@ -577,6 +651,154 @@ async function loadAiInsight() {
   }
 }
 
+// ── CRYPTO CALCULATOR ──────────────────────────────────
+
+function setupCalculator() {
+  const coinEl   = document.getElementById("calcCoin");
+  const amountEl = document.getElementById("calcAmount");
+  const targetEl = document.getElementById("calcTarget");
+  const resultEl = document.getElementById("calcResult");
+
+  function update() {
+    if (!cryptoCache) return;
+
+    const coin   = coinEl.value;
+    const amount = parseFloat(amountEl.value);
+    const target = parseFloat(targetEl.value);
+
+    if (!amount || !target) {
+      resultEl.style.display = "none";
+      resultEl.innerHTML = "";
+      return;
+    }
+
+    const price = cryptoCache[coin]?.usd;
+    if (!price) return;
+
+    const currentVal = amount * price;
+    const futureVal  = amount * target;
+    const gain       = futureVal - currentVal;
+    const gainPct    = ((futureVal - currentVal) / currentVal * 100).toFixed(2);
+    const isUp       = futureVal >= currentVal;
+    const arrow      = isUp ? "📈🚀" : "📉";
+    const gainColor  = isUp ? "#00ff88" : "#ff4d4d";
+
+    const labels = {
+      "bitcoin": "BTC", "hedera-hashgraph": "HBAR",
+      "ripple": "XRP", "chainlink": "LINK", "solana": "SOL"
+    };
+
+    resultEl.style.display = "block";
+    resultEl.innerHTML = `
+      <div style="color:#888;font-size:12px;margin-bottom:8px;">
+        ${labels[coin]} @ $${formatPrice(price)} now
+      </div>
+      <div style="margin-bottom:4px;">
+        Holdings: <span style="color:white">${amount} ${labels[coin]}</span>
+        <span style="color:#888"> ($${currentVal.toFixed(2)})</span>
+      </div>
+      <div style="margin-bottom:4px;">
+        Target: <span style="color:white">$${formatPrice(target)}</span>
+      </div>
+      <div style="margin-top:8px;font-size:15px;font-weight:bold;color:${gainColor};">
+        ${amount} ${labels[coin]} ~ $${futureVal.toFixed(2)} ${arrow}
+      </div>
+      <div style="color:${gainColor};font-size:12px;margin-top:2px;">
+        ${isUp ? "+" : ""}$${gain.toFixed(2)} (${isUp ? "+" : ""}${gainPct}%)
+      </div>
+    `;
+  }
+
+  coinEl.onchange   = update;
+  amountEl.oninput  = update;
+  targetEl.oninput  = update;
+}
+
+// ── CRYPTO SEARCH ──────────────────────────────────────
+
+let cryptoSearchTimer = null;
+
+async function searchCrypto() {
+  const query  = document.getElementById("cryptoSearch").value.trim().toLowerCase();
+  const el     = document.getElementById("cryptoSearchResult");
+
+  if (!query) { el.innerHTML = ""; return; }
+
+  el.innerHTML = "<div style='color:#888;font-size:13px;padding:8px 0'>Searching...</div>";
+
+  try {
+    const r = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${query}&vs_currencies=usd&include_24hr_change=true`
+    );
+    const d = await r.json();
+    const coin = d[query];
+
+    if (coin?.usd) {
+      const change    = coin.usd_24h_change || 0;
+      const arrow     = change >= 0 ? "▲" : "▼";
+      const chgColor  = change >= 0 ? "#00ff88" : "#ff4d4d";
+
+      el.innerHTML = `
+        <div class="mover-card" style="cursor:default;">
+          <div class="mover-row">
+            <span style="font-weight:bold;text-transform:uppercase;">${query}</span>
+            <span style="font-weight:bold;">$${formatPrice(coin.usd)}</span>
+          </div>
+          <div class="mover-row">
+            <span style="color:#888;font-size:12px;">24h Change</span>
+            <span style="color:${chgColor};font-size:12px;">${arrow} ${Math.abs(change).toFixed(2)}%</span>
+          </div>
+        </div>
+      `;
+    } else {
+      el.innerHTML = "<div style='color:#888;font-size:13px;padding:8px 0'>Not found — try the full CoinGecko ID (e.g. \"dogecoin\", \"cardano\")</div>";
+    }
+  } catch {
+    el.innerHTML = "<div style='color:#ff4d4d;font-size:13px;padding:8px 0'>Error fetching data</div>";
+  }
+}
+
+document.getElementById("cryptoSearch").addEventListener("input", () => {
+  clearTimeout(cryptoSearchTimer);
+  cryptoSearchTimer = setTimeout(searchCrypto, 600);
+});
+
+// ── STOCK SEARCH ───────────────────────────────────────
+
+let stockSearchTimer = null;
+
+function searchStock() {
+  const query = document.getElementById("stockSearch").value.trim().toUpperCase();
+  const el    = document.getElementById("stockSearchResult");
+
+  if (!query) { el.innerHTML = ""; return; }
+
+  const tvSymbol  = `NASDAQ:${query}`;
+  const tvParams  = encodeURIComponent(JSON.stringify({
+    symbol: tvSymbol, dateRange: "1D",
+    colorTheme: "dark", isTransparent: true, autosize: true
+  }));
+
+  el.innerHTML = `
+    <div class="mover-card" style="cursor:default;">
+      <div style="font-size:13px;color:#888;margin-bottom:8px;">
+        ${query} — tap chart to interact
+      </div>
+      <div class="chart-container">
+        <iframe
+          src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${tvParams}"
+          style="width:100%;height:100%;border:none;"
+        ></iframe>
+      </div>
+    </div>
+  `;
+}
+
+document.getElementById("stockSearch").addEventListener("input", () => {
+  clearTimeout(stockSearchTimer);
+  stockSearchTimer = setTimeout(searchStock, 600);
+});
+
 // ── NEWS ───────────────────────────────────────────────
 
 async function loadCryptoNews() {
@@ -691,14 +913,8 @@ document.addEventListener("touchend", (e) => {
 
 function handleSwipe() {
   const diff = touchStartX - touchEndX;
-
   if (Math.abs(diff) < 40) return;
-
-  if (diff > 0) {
-    nextVerse();
-  } else {
-    prevVerse();
-  }
+  if (diff > 0) { nextVerse(); } else { prevVerse(); }
 }
 
 document.addEventListener("click", (e) => {
@@ -718,12 +934,14 @@ loadCryptoNews();
 loadStockNews();
 loadVerse();
 loadAiInsight();
+setupCalculator();
 
 setInterval(() => {
   loadCrypto();
   loadMarket();
   loadCryptoNews();
   loadStockNews();
+  loadAiInsight();
 }, 60000);
 
 </script>
