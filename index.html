@@ -151,6 +151,27 @@ body {
   font-size: 12px;
   color: #888;
 }
+
+/* ── MOVER STYLES ───────────────────────────── */
+
+.mover-card {
+  background: #161b22;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.mover-title {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.mover-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
 </style>
 
 </head>
@@ -173,6 +194,13 @@ body {
 </div>
 
 <div id="dailyVerse"></div>
+
+<div id="topMovers" style="padding:15px"></div>
+
+<div style="padding:15px">
+  <div style="font-weight:bold;margin-bottom:10px;">🧠 AI Market Insight</div>
+  <div id="aiInsight" class="news-card">Loading insight...</div>
+</div>
 
 <div class="tabs">
   <div class="tab active" onclick="showTab('crypto', event)">Crypto</div>
@@ -392,6 +420,48 @@ function renderCrypto() {
   el.innerHTML = html;
 }
 
+// ── TOP MOVERS ─────────────────────────────────────────
+
+function renderTopMovers() {
+  if (!cryptoCache) return;
+
+  const coins = [
+    { name: "BTC",  data: cryptoCache.bitcoin },
+    { name: "HBAR", data: cryptoCache["hedera-hashgraph"] },
+    { name: "XRP",  data: cryptoCache.ripple },
+    { name: "LINK", data: cryptoCache.chainlink },
+    { name: "SOL",  data: cryptoCache.solana }
+  ].filter(c => c.data);
+
+  const sorted  = coins.sort((a, b) => b.data.usd_24h_change - a.data.usd_24h_change);
+  const gainers = sorted.slice(0, 2);
+  const losers  = sorted.slice(-2).reverse();
+
+  const el = document.getElementById("topMovers");
+
+  el.innerHTML = `
+    <div style="font-weight:bold;margin-bottom:10px;">📊 Top Movers</div>
+    <div class="mover-card">
+      <div class="mover-title">🚀 Top Gainers</div>
+      ${gainers.map(c => `
+        <div class="mover-row">
+          <span>${c.name}</span>
+          <span class="green">+${c.data.usd_24h_change.toFixed(2)}%</span>
+        </div>
+      `).join("")}
+    </div>
+    <div class="mover-card">
+      <div class="mover-title">🔻 Top Losers</div>
+      ${losers.map(c => `
+        <div class="mover-row">
+          <span>${c.name}</span>
+          <span class="red">${c.data.usd_24h_change.toFixed(2)}%</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
 // ── STOCKS LIST ────────────────────────────────────────
 
 function renderStocks() {
@@ -485,11 +555,25 @@ async function loadCrypto() {
     const res = await fetch("/crypto");
     cryptoCache = await res.json();
     renderCrypto();
+    renderTopMovers();
     await updateTicker();
   } catch {
     if (!cryptoCache) {
       el.innerHTML = "<div style='padding:10px;color:#ff4d4d'>Failed to load prices</div>";
     }
+  }
+}
+
+// ── AI INSIGHT ─────────────────────────────────────────
+
+async function loadAiInsight() {
+  const el = document.getElementById("aiInsight");
+  try {
+    const r = await fetch("/ai-insight");
+    const d = await r.json();
+    el.textContent = d.text || "No insight available.";
+  } catch {
+    el.textContent = "Failed to load insight.";
   }
 }
 
@@ -633,6 +717,7 @@ renderStocks();
 loadCryptoNews();
 loadStockNews();
 loadVerse();
+loadAiInsight();
 
 setInterval(() => {
   loadCrypto();
