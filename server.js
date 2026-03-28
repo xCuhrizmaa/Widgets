@@ -163,15 +163,15 @@ app.get("/ai-insight", async (req, res) => {
     );
     const data = await r.json();
 
-    const prompt = `
-Analyze this crypto market data and give a short 1-2 sentence insight:
+    const prompt = `Give a short, confident 1 sentence crypto market insight based on:
 
 BTC: ${data.bitcoin.usd_24h_change.toFixed(2)}%
 HBAR: ${data["hedera-hashgraph"].usd_24h_change.toFixed(2)}%
 XRP: ${data.ripple.usd_24h_change.toFixed(2)}%
 LINK: ${data.chainlink.usd_24h_change.toFixed(2)}%
 SOL: ${data.solana.usd_24h_change.toFixed(2)}%
-    `;
+
+Keep it sharp, like a trader note.`;
 
     const ai = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -204,7 +204,6 @@ app.get("/", (req, res) => {
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server running");
 
-  // Wait 3s after boot before warming cache
   setTimeout(async () => {
     console.log("Warming cache...");
     try {
