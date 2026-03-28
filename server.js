@@ -69,7 +69,7 @@ app.get("/market", async (req, res) => {
   }
 });
 
-// ── S&P 500 (kept as-is, even if flaky) ────────────────
+// ── S&P 500 ────────────────────────────────────────────
 app.get("/sp500", async (req, res) => {
   const now = Date.now();
   if (sp500Cache && now - sp500Time < 300000) {
@@ -123,7 +123,7 @@ app.get("/sp500", async (req, res) => {
   res.status(500).json({ error: "All SP500 sources failed" });
 });
 
-// ── ✅ CRYPTO NEWS (NEW FIX) ────────────────────────────
+// ── CRYPTO NEWS ────────────────────────────────────────
 app.get("/crypto-news", async (req, res) => {
   try {
     const r = await fetch(
@@ -138,7 +138,7 @@ app.get("/crypto-news", async (req, res) => {
   }
 });
 
-// ── ✅ STOCK NEWS (NEW FIX) ─────────────────────────────
+// ── STOCK NEWS ─────────────────────────────────────────
 app.get("/stock-news", async (req, res) => {
   try {
     const r = await fetch(
@@ -153,6 +153,48 @@ app.get("/stock-news", async (req, res) => {
   }
 });
 
+// ── AI INSIGHT ─────────────────────────────────────────
+app.get("/ai-insight", async (req, res) => {
+  try {
+    const r = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price" +
+      "?ids=bitcoin,hedera-hashgraph,ripple,chainlink,solana" +
+      "&vs_currencies=usd&include_24hr_change=true"
+    );
+    const data = await r.json();
+
+    const prompt = `
+Analyze this crypto market data and give a short 1-2 sentence insight:
+
+BTC: ${data.bitcoin.usd_24h_change.toFixed(2)}%
+HBAR: ${data["hedera-hashgraph"].usd_24h_change.toFixed(2)}%
+XRP: ${data.ripple.usd_24h_change.toFixed(2)}%
+LINK: ${data.chainlink.usd_24h_change.toFixed(2)}%
+SOL: ${data.solana.usd_24h_change.toFixed(2)}%
+    `;
+
+    const ai = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 60
+      })
+    });
+
+    const json = await ai.json();
+    res.json({ text: json.choices[0].message.content });
+
+  } catch (err) {
+    console.log("AI error:", err.message);
+    res.status(500).json({ error: "AI failed" });
+  }
+});
+
 // ── HOME ───────────────────────────────────────────────
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
@@ -161,4 +203,18 @@ app.get("/", (req, res) => {
 // ── START ──────────────────────────────────────────────
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server running");
+
+  // Wait 3s after boot before warming cache
+  setTimeout(async () => {
+    console.log("Warming cache...");
+    try {
+      const [cryptoRes, marketRes] = await Promise.all([
+        fetch("http://localhost:" + (process.env.PORT || 3000) + "/crypto"),
+        fetch("http://localhost:" + (process.env.PORT || 3000) + "/market")
+      ]);
+      console.log("Cache warmed — crypto:", cryptoRes.status, "market:", marketRes.status);
+    } catch (err) {
+      console.log("Cache warm failed:", err.message);
+    }
+  }, 3000);
 });
