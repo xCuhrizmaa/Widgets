@@ -112,23 +112,33 @@ body {
   color: #888;
 }
 
-/* ── VERSE STYLES ───────────────────────────── */
+/* ── VERSE STYLES (UPGRADED) ───────────────────────────── */
 
 .verse-card {
   background: #161b22;
   margin: 10px 15px;
   padding: 14px;
   border-radius: 12px;
-  opacity: 0;
-  transform: translateY(10px);
-  animation: fadeSlide 0.6s ease forwards;
+
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.4s ease;
+
+  box-shadow: 0 0 0px rgba(0,255,136,0.0);
 }
 
-@keyframes fadeSlide {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.verse-card.fade-out {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.verse-card.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.verse-card:hover {
+  box-shadow: 0 0 12px rgba(0,255,136,0.15);
 }
 
 .verse-text {
@@ -188,7 +198,7 @@ body {
 let expanded      = null;
 let cryptoCache   = null;
 let sp500Cache    = null;
-let lastTickerKey = "";  // prevents ticker reset when prices haven't changed
+let lastTickerKey = "";
 
 // ── TICKER ENGINE ──────────────────────────────────────
 
@@ -270,7 +280,6 @@ async function updateTicker() {
     { name: "SOL",  data: cryptoCache.solana }
   ];
 
-  // Build a unique key — if nothing changed, skip re-render to avoid scroll reset
   const newKey = cryptoItems.map(i =>
     i.data ? `${i.name}:${i.data.usd}:${i.data.usd_24h_change}` : ""
   ).join("|") +
@@ -527,32 +536,92 @@ function showTab(tab, e) {
   e.target.classList.add("active");
 }
 
-// ── DAILY VERSE ───────────────────────────────────────
+// ── DAILY VERSE (UPGRADED) ─────────────────────────────
+
+let verseIndex = 0;
+
+const verses = [
+  { text: "Commit your actions to the Lord, and your plans will succeed.", ref: "Proverbs 16:3 (NLT)" },
+  { text: "Work willingly at whatever you do, as though you were working for the Lord.", ref: "Colossians 3:23 (NLT)" },
+  { text: "The plans of the diligent lead surely to profit.", ref: "Proverbs 21:5 (NLT)" },
+  { text: "A faithful person will be richly blessed.", ref: "Proverbs 28:20 (NLT)" },
+  { text: "Whoever can be trusted with very little can also be trusted with much.", ref: "Luke 16:10 (NLT)" },
+  { text: "Lazy people want much but get little, but those who work hard will prosper.", ref: "Proverbs 13:4 (NLT)" },
+  { text: "Honor the Lord with your wealth.", ref: "Proverbs 3:9 (NLT)" },
+  { text: "Good planning and hard work lead to prosperity.", ref: "Proverbs 21:5 (NLT)" },
+  { text: "The blessing of the Lord makes a person rich.", ref: "Proverbs 10:22 (NLT)" }
+];
+
+function renderVerse() {
+  const v = verses[verseIndex];
+  const container = document.getElementById("dailyVerse");
+
+  const existing = container.querySelector(".verse-card");
+  if (existing) {
+    existing.classList.add("fade-out");
+  }
+
+  setTimeout(() => {
+    container.innerHTML = `
+      <div class="verse-card fade-in" id="verseCard">
+        <div style="font-size:11px;color:#00ff88;margin-bottom:6px;">DAILY FOUNDATION</div>
+        <div class="verse-text">"${v.text}"</div>
+        <div class="verse-ref">— ${v.ref}</div>
+      </div>
+    `;
+  }, 200);
+}
+
+function nextVerse() {
+  verseIndex = (verseIndex + 1) % verses.length;
+  renderVerse();
+}
+
+function prevVerse() {
+  verseIndex = (verseIndex - 1 + verses.length) % verses.length;
+  renderVerse();
+}
 
 function loadVerse() {
+  verseIndex = new Date().getDate() % verses.length;
+  renderVerse();
 
-  const verses = [
-    { text: "Commit your actions to the Lord, and your plans will succeed.", ref: "Proverbs 16:3 (NLT)" },
-    { text: "Work willingly at whatever you do, as though you were working for the Lord.", ref: "Colossians 3:23 (NLT)" },
-    { text: "The plans of the diligent lead surely to profit.", ref: "Proverbs 21:5 (NLT)" },
-    { text: "A faithful person will be richly blessed.", ref: "Proverbs 28:20 (NLT)" },
-    { text: "Whoever can be trusted with very little can also be trusted with much.", ref: "Luke 16:10 (NLT)" },
-    { text: "Lazy people want much but get little, but those who work hard will prosper.", ref: "Proverbs 13:4 (NLT)" },
-    { text: "Honor the Lord with your wealth.", ref: "Proverbs 3:9 (NLT)" },
-    { text: "Good planning and hard work lead to prosperity.", ref: "Proverbs 21:5 (NLT)" },
-    { text: "The blessing of the Lord makes a person rich.", ref: "Proverbs 10:22 (NLT)" }
-  ];
-
-  const index = new Date().getDate() % verses.length;
-  const v = verses[index];
-
-  document.getElementById("dailyVerse").innerHTML = `
-    <div class="verse-card">
-      <div class="verse-text">"${v.text}"</div>
-      <div class="verse-ref">— ${v.ref}</div>
-    </div>
-  `;
+  setInterval(() => {
+    nextVerse();
+  }, 900000);
 }
+
+// ── VERSE SWIPE SUPPORT ─────────────────────────────
+
+let touchStartX = 0;
+let touchEndX   = 0;
+
+document.addEventListener("touchstart", (e) => {
+  touchStartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener("touchend", (e) => {
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipe();
+});
+
+function handleSwipe() {
+  const diff = touchStartX - touchEndX;
+
+  if (Math.abs(diff) < 40) return;
+
+  if (diff > 0) {
+    nextVerse();
+  } else {
+    prevVerse();
+  }
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#dailyVerse")) {
+    nextVerse();
+  }
+});
 
 // ── INIT ───────────────────────────────────────────────
 
