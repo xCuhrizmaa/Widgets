@@ -248,6 +248,7 @@ body {
 </div>
 
 <!-- ── CRYPTO CALCULATOR ─────────────────────── -->
+
 <div style="padding:15px">
   <div style="font-weight:bold;margin-bottom:10px;">🧮 Crypto Calculator</div>
   <div class="news-card" style="cursor:default;">
@@ -264,6 +265,31 @@ body {
   </div>
 </div>
 
+<!-- ── PORTFOLIO ─────────────────────────────── -->
+
+<div style="padding:15px">
+  <div style="font-weight:bold;margin-bottom:10px;">💼 My Portfolio</div>
+
+  <div class="news-card" style="cursor:default;">
+    <select id="portfolioCoin" class="dash-select">
+      <option value="bitcoin">BTC</option>
+      <option value="hedera-hashgraph">HBAR</option>
+      <option value="ripple">XRP</option>
+      <option value="chainlink">LINK</option>
+      <option value="solana">SOL</option>
+    </select>
+
+```
+<input id="portfolioAmount" class="dash-input" placeholder="Amount (e.g. 500)" type="number" />
+
+<button onclick="addHolding()" style="width:100%;background:#00ff88;color:#0d1117;border:none;border-radius:8px;padding:10px;font-size:14px;font-weight:bold;cursor:pointer;">Add Holding</button>
+```
+
+  </div>
+
+  <div id="portfolioList" style="margin-top:10px;"></div>
+</div>
+
 <div class="tabs">
   <div class="tab active" onclick="showTab('crypto', event)">Crypto</div>
   <div class="tab" onclick="showTab('stocks', event)">Stocks</div>
@@ -278,6 +304,7 @@ body {
 </div>
 
 <!-- ── CRYPTO SEARCH ─────────────────────────── -->
+
 <div style="padding:15px">
   <div style="font-weight:bold;margin-bottom:10px;">🔍 Search Any Crypto</div>
   <input id="cryptoSearch" class="dash-input" placeholder="e.g. dogecoin, cardano..." />
@@ -290,6 +317,7 @@ body {
 </div>
 
 <!-- ── STOCK SEARCH ──────────────────────────── -->
+
 <div style="padding:15px">
   <div style="font-weight:bold;margin-bottom:10px;">📊 Search Any Stock</div>
   <input id="stockSearch" class="dash-input" placeholder="e.g. AAPL, TSLA, MSFT..." />
@@ -630,6 +658,7 @@ async function loadCrypto() {
     cryptoCache = await res.json();
     renderCrypto();
     renderTopMovers();
+    renderPortfolio();
     await updateTicker();
   } catch {
     if (!cryptoCache) {
@@ -712,6 +741,89 @@ function setupCalculator() {
   coinEl.onchange   = update;
   amountEl.oninput  = update;
   targetEl.oninput  = update;
+}
+
+// ── PORTFOLIO ──────────────────────────────────────────
+
+let portfolio = JSON.parse(localStorage.getItem("portfolio") || "[]");
+
+function savePortfolio() {
+  localStorage.setItem("portfolio", JSON.stringify(portfolio));
+}
+
+function addHolding() {
+  const coin   = document.getElementById("portfolioCoin").value;
+  const amount = parseFloat(document.getElementById("portfolioAmount").value);
+
+  if (!amount || amount <= 0) return;
+
+  const existing = portfolio.find(p => p.coin === coin);
+
+  if (existing) {
+    existing.amount += amount;
+  } else {
+    portfolio.push({ coin, amount });
+  }
+
+  document.getElementById("portfolioAmount").value = "";
+  savePortfolio();
+  renderPortfolio();
+}
+
+function removeHolding(coin) {
+  portfolio = portfolio.filter(p => p.coin !== coin);
+  savePortfolio();
+  renderPortfolio();
+}
+
+function renderPortfolio() {
+  const el = document.getElementById("portfolioList");
+
+  if (!cryptoCache) {
+    el.innerHTML = "<div style='color:#888;font-size:13px;padding:8px 0'>Loading prices...</div>";
+    return;
+  }
+
+  if (portfolio.length === 0) {
+    el.innerHTML = "<div style='color:#888;font-size:13px;padding:8px 0'>No holdings yet. Add one above!</div>";
+    return;
+  }
+
+  const labels = {
+    "bitcoin": "BTC", "hedera-hashgraph": "HBAR",
+    "ripple": "XRP", "chainlink": "LINK", "solana": "SOL"
+  };
+
+  let total = 0;
+
+  el.innerHTML = portfolio.map(p => {
+    const price = cryptoCache[p.coin]?.usd || 0;
+    const value = p.amount * price;
+    total += value;
+    const label = labels[p.coin] || p.coin.toUpperCase();
+
+    return `
+      <div class="card" style="cursor:default;">
+        <div class="row">
+          <div style="font-weight:bold;">${label}</div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="color:#00ff88;font-weight:bold;">$${value.toFixed(2)}</span>
+            <span onclick="removeHolding('${p.coin}')" style="color:#ff4d4d;font-size:18px;cursor:pointer;line-height:1;">×</span>
+          </div>
+        </div>
+        <div style="color:#888;font-size:12px;margin-top:4px;">
+          ${p.amount} coins @ $${formatPrice(price)}
+        </div>
+      </div>
+    `;
+  }).join("") + `
+    <div class="card" style="cursor:default;border:1px solid #00ff8833;">
+      <div class="row">
+        <div style="color:#888;">Total Value</div>
+        <div style="color:#00ff88;font-weight:bold;font-size:16px;">$${total.toFixed(2)}</div>
+      </div>
+    </div>
+  `;
 }
 
 // ── CRYPTO SEARCH ──────────────────────────────────────
@@ -935,6 +1047,7 @@ loadStockNews();
 loadVerse();
 loadAiInsight();
 setupCalculator();
+renderPortfolio();
 
 setInterval(() => {
   loadCrypto();
