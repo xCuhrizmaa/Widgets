@@ -112,18 +112,16 @@ body {
   color: #888;
 }
 
-/* ── VERSE STYLES (UPGRADED) ───────────────────────────── */
+/* ── VERSE STYLES ───────────────────────────── */
 
 .verse-card {
   background: #161b22;
   margin: 10px 15px;
   padding: 14px;
   border-radius: 12px;
-
   opacity: 1;
   transform: translateY(0);
   transition: all 0.4s ease;
-
   box-shadow: 0 0 0px rgba(0,255,136,0.0);
 }
 
@@ -173,7 +171,7 @@ body {
   margin-bottom: 4px;
 }
 
-/* ── CALCULATOR / SEARCH INPUT STYLES ──────── */
+/* ── INPUT STYLES ───────────────────────────── */
 
 .dash-input {
   width: 100%;
@@ -217,10 +215,44 @@ body {
   font-size: 14px;
   line-height: 1.8;
 }
+
+/* ── TOOLS INPUT STYLES ─────────────────────── */
+
+.tool-input {
+  width: 100%;
+  background: #0d1117;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px;
+  color: white;
+  font-size: 14px;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+  outline: none;
+}
+
+.tool-input:focus {
+  border-color: #00ff88;
+}
+
+.tool-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #00ff88;
+  color: #0d1117;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.tool-btn:active {
+  opacity: 0.8;
+}
 </style>
 
 </head>
-
 <body>
 
 <div class="ticker" id="tickerOuter">
@@ -269,7 +301,6 @@ body {
 
 <div style="padding:15px">
   <div style="font-weight:bold;margin-bottom:10px;">💼 My Portfolio</div>
-
   <div class="news-card" style="cursor:default;">
     <select id="portfolioCoin" class="dash-select">
       <option value="bitcoin">BTC</option>
@@ -278,25 +309,23 @@ body {
       <option value="chainlink">LINK</option>
       <option value="solana">SOL</option>
     </select>
-
-```
-<input id="portfolioAmount" class="dash-input" placeholder="Amount (e.g. 500)" type="number" />
-
-<button onclick="addHolding()" style="width:100%;background:#00ff88;color:#0d1117;border:none;border-radius:8px;padding:10px;font-size:14px;font-weight:bold;cursor:pointer;">Add Holding</button>
-```
-
+    <input id="portfolioAmount" class="dash-input" placeholder="Amount (e.g. 500)" type="number" />
+    <button onclick="addHolding()" style="width:100%;background:#00ff88;color:#0d1117;border:none;border-radius:8px;padding:10px;font-size:14px;font-weight:bold;cursor:pointer;">Add Holding</button>
   </div>
-
   <div id="portfolioList" style="margin-top:10px;"></div>
 </div>
+
+<!-- ── TABS ──────────────────────────────────── -->
 
 <div class="tabs">
   <div class="tab active" onclick="showTab('crypto', event)">Crypto</div>
   <div class="tab" onclick="showTab('stocks', event)">Stocks</div>
+  <div class="tab" onclick="showTab('tools', event)">Tools</div>
 </div>
 
 <div id="crypto" class="list"></div>
 <div id="stocks" class="list" style="display:none;"></div>
+<div id="tools" class="list" style="display:none;"></div>
 
 <div style="padding:15px">
   <div style="font-weight:bold;margin-bottom:10px;">🪙 Crypto News</div>
@@ -608,6 +637,279 @@ function renderStocks() {
   el.innerHTML = html;
 }
 
+// ── TOOLS TAB ──────────────────────────────────────────
+
+function renderTools() {
+  const el = document.getElementById("tools");
+
+  el.innerHTML = `
+    <div class="card" style="cursor:default;">
+      <div style="font-weight:bold;margin-bottom:10px;">🧮 Quick Calculator</div>
+      <select id="toolCalcCoin" class="dash-select">
+        <option value="BTC">BTC</option>
+        <option value="HBAR">HBAR</option>
+        <option value="XRP">XRP</option>
+        <option value="LINK">LINK</option>
+        <option value="SOL">SOL</option>
+      </select>
+      <input id="toolCalcAmount" class="tool-input" placeholder="Amount (e.g. 500)" type="number" />
+      <input id="toolCalcTarget" class="tool-input" placeholder="Target Price (e.g. 3.45)" type="number" />
+      <button class="tool-btn" onclick="runCalc()">Calculate</button>
+      <div id="toolCalcResult" style="margin-top:10px;font-size:14px;line-height:1.8;"></div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div style="font-weight:bold;margin-bottom:10px;">💼 Portfolio</div>
+      <select id="portCoin" class="dash-select">
+        <option value="bitcoin">BTC</option>
+        <option value="hedera-hashgraph">HBAR</option>
+        <option value="ripple">XRP</option>
+        <option value="chainlink">LINK</option>
+        <option value="solana">SOL</option>
+      </select>
+      <input id="portAmount" class="tool-input" placeholder="Amount" type="number" />
+      <button class="tool-btn" onclick="addHoldingFromTools()">Add Holding</button>
+      <div id="toolsPortfolioList" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <div style="font-weight:bold;margin-bottom:10px;">📊 Paper Trading</div>
+      <div style="color:#888;font-size:13px;margin-bottom:10px;">
+        Balance: <span style="color:#00ff88;font-weight:bold;">$<span id="paperBalance">${paperBalance.toFixed(2)}</span></span>
+      </div>
+      <select id="paperCoin" class="dash-select">
+        <option value="BTC">BTC</option>
+        <option value="HBAR">HBAR</option>
+        <option value="XRP">XRP</option>
+        <option value="LINK">LINK</option>
+        <option value="SOL">SOL</option>
+      </select>
+      <input id="paperAmount" class="tool-input" placeholder="Amount of coins" type="number" />
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button class="tool-btn" style="background:#00ff88;color:#0d1117;" onclick="paperBuy()">Buy</button>
+        <button class="tool-btn" style="background:#ff4d4d;color:white;" onclick="paperSell()">Sell</button>
+      </div>
+      <div id="paperPortfolio" style="margin-top:10px;"></div>
+    </div>
+  `;
+
+  renderToolsPortfolio();
+  renderPaperPortfolio();
+}
+
+// ── TOOLS CALCULATOR ───────────────────────────────────
+
+function runCalc() {
+  const coinLabel = document.getElementById("toolCalcCoin").value;
+  const amount    = parseFloat(document.getElementById("toolCalcAmount").value);
+  const target    = parseFloat(document.getElementById("toolCalcTarget").value);
+  const resultEl  = document.getElementById("toolCalcResult");
+
+  if (!cryptoCache || !amount || !target) {
+    resultEl.innerHTML = "<span style='color:#888'>Enter amount and target price.</span>";
+    return;
+  }
+
+  const coinMap = {
+    BTC: cryptoCache.bitcoin,
+    HBAR: cryptoCache["hedera-hashgraph"],
+    XRP: cryptoCache.ripple,
+    LINK: cryptoCache.chainlink,
+    SOL: cryptoCache.solana
+  };
+
+  const price = coinMap[coinLabel]?.usd;
+  if (!price) return;
+
+  const currentVal = amount * price;
+  const futureVal  = amount * target;
+  const gain       = futureVal - currentVal;
+  const gainPct    = ((futureVal - currentVal) / currentVal * 100).toFixed(2);
+  const isUp       = futureVal >= currentVal;
+  const gainColor  = isUp ? "#00ff88" : "#ff4d4d";
+
+  resultEl.innerHTML = `
+    <div style="color:#888;font-size:12px;margin-bottom:6px;">${coinLabel} @ $${formatPrice(price)} now</div>
+    <div>Now: <span style="color:white;font-weight:bold;">$${currentVal.toFixed(2)}</span></div>
+    <div>At target: <span style="color:${gainColor};font-weight:bold;">$${futureVal.toFixed(2)}</span></div>
+    <div style="color:${gainColor};margin-top:4px;">${isUp ? "+" : ""}$${gain.toFixed(2)} (${isUp ? "+" : ""}${gainPct}%) ${isUp ? "🚀" : "📉"}</div>
+  `;
+}
+
+// ── TOOLS PORTFOLIO (mirrors main portfolio) ────────────
+
+function addHoldingFromTools() {
+  const coin   = document.getElementById("portCoin").value;
+  const amount = parseFloat(document.getElementById("portAmount").value);
+
+  if (!amount || amount <= 0) return;
+
+  const existing = portfolio.find(p => p.coin === coin);
+  if (existing) {
+    existing.amount += amount;
+  } else {
+    portfolio.push({ coin, amount });
+  }
+
+  document.getElementById("portAmount").value = "";
+  savePortfolio();
+  renderPortfolio();
+  renderToolsPortfolio();
+}
+
+function renderToolsPortfolio() {
+  const el = document.getElementById("toolsPortfolioList");
+  if (!el) return;
+
+  if (!cryptoCache || portfolio.length === 0) {
+    el.innerHTML = "<div style='color:#888;font-size:13px;margin-top:8px;'>No holdings yet.</div>";
+    return;
+  }
+
+  const labels = {
+    "bitcoin": "BTC", "hedera-hashgraph": "HBAR",
+    "ripple": "XRP", "chainlink": "LINK", "solana": "SOL"
+  };
+
+  let total = 0;
+
+  el.innerHTML = portfolio.map(p => {
+    const price = cryptoCache[p.coin]?.usd || 0;
+    const value = p.amount * price;
+    total += value;
+    const label = labels[p.coin] || p.coin.toUpperCase();
+
+    return `
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #222;">
+        <span style="color:#ccc;">${label} — ${p.amount}</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="color:#00ff88;">$${value.toFixed(2)}</span>
+          <span onclick="removeHolding('${p.coin}');renderToolsPortfolio();" style="color:#ff4d4d;cursor:pointer;font-size:16px;">×</span>
+        </div>
+      </div>
+    `;
+  }).join("") + `
+    <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:bold;">
+      <span style="color:#888;">Total</span>
+      <span style="color:#00ff88;">$${total.toFixed(2)}</span>
+    </div>
+  `;
+}
+
+// ── PAPER TRADING ──────────────────────────────────────
+
+let paperBalance  = parseFloat(localStorage.getItem("paperBalance") || "10000");
+let paperHoldings = JSON.parse(localStorage.getItem("paperHoldings") || "[]");
+
+function savePaper() {
+  localStorage.setItem("paperBalance", paperBalance.toString());
+  localStorage.setItem("paperHoldings", JSON.stringify(paperHoldings));
+}
+
+function getCoinPrice(label) {
+  const coinMap = {
+    BTC: cryptoCache?.bitcoin,
+    HBAR: cryptoCache?.["hedera-hashgraph"],
+    XRP: cryptoCache?.ripple,
+    LINK: cryptoCache?.chainlink,
+    SOL: cryptoCache?.solana
+  };
+  return coinMap[label]?.usd || 0;
+}
+
+function paperBuy() {
+  const coin   = document.getElementById("paperCoin").value;
+  const amount = parseFloat(document.getElementById("paperAmount").value);
+  if (!amount || amount <= 0 || !cryptoCache) return;
+
+  const price = getCoinPrice(coin);
+  if (!price) return;
+
+  const cost = price * amount;
+  if (cost > paperBalance) {
+    alert("Not enough balance!");
+    return;
+  }
+
+  paperBalance -= cost;
+
+  const existing = paperHoldings.find(h => h.coin === coin);
+  if (existing) {
+    existing.amount += amount;
+    existing.avgPrice = ((existing.avgPrice * (existing.amount - amount)) + (price * amount)) / existing.amount;
+  } else {
+    paperHoldings.push({ coin, amount, avgPrice: price });
+  }
+
+  savePaper();
+  renderPaperPortfolio();
+}
+
+function paperSell() {
+  const coin   = document.getElementById("paperCoin").value;
+  const amount = parseFloat(document.getElementById("paperAmount").value);
+  if (!amount || amount <= 0 || !cryptoCache) return;
+
+  const price    = getCoinPrice(coin);
+  const existing = paperHoldings.find(h => h.coin === coin);
+
+  if (!existing || existing.amount < amount) {
+    alert("Not enough coins to sell!");
+    return;
+  }
+
+  paperBalance += price * amount;
+  existing.amount -= amount;
+
+  if (existing.amount <= 0) {
+    paperHoldings = paperHoldings.filter(h => h.coin !== coin);
+  }
+
+  savePaper();
+  renderPaperPortfolio();
+}
+
+function renderPaperPortfolio() {
+  const balEl = document.getElementById("paperBalance");
+  if (balEl) balEl.textContent = paperBalance.toFixed(2);
+
+  const el = document.getElementById("paperPortfolio");
+  if (!el) return;
+
+  if (paperHoldings.length === 0) {
+    el.innerHTML = "<div style='color:#888;font-size:13px;'>No paper trades yet.</div>";
+    return;
+  }
+
+  let portfolioValue = 0;
+
+  el.innerHTML = paperHoldings.map(h => {
+    const price    = getCoinPrice(h.coin);
+    const value    = h.amount * price;
+    const pnl      = value - (h.avgPrice * h.amount);
+    const pnlColor = pnl >= 0 ? "#00ff88" : "#ff4d4d";
+    portfolioValue += value;
+
+    return `
+      <div style="padding:8px 0;border-bottom:1px solid #222;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-weight:bold;">${h.coin}</span>
+          <span style="color:#00ff88;">$${value.toFixed(2)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:3px;">
+          <span style="color:#888;font-size:12px;">${h.amount.toFixed(4)} @ $${formatPrice(h.avgPrice)}</span>
+          <span style="color:${pnlColor};font-size:12px;">${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}</span>
+        </div>
+      </div>
+    `;
+  }).join("") + `
+    <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:bold;">
+      <span style="color:#888;">Portfolio Value</span>
+      <span style="color:#00ff88;">$${portfolioValue.toFixed(2)}</span>
+    </div>
+  `;
+}
+
 // ── MARKET HEADER ──────────────────────────────────────
 
 async function loadMarket() {
@@ -680,7 +982,7 @@ async function loadAiInsight() {
   }
 }
 
-// ── CRYPTO CALCULATOR ──────────────────────────────────
+// ── CRYPTO CALCULATOR (main section) ───────────────────
 
 function setupCalculator() {
   const coinEl   = document.getElementById("calcCoin");
@@ -758,7 +1060,6 @@ function addHolding() {
   if (!amount || amount <= 0) return;
 
   const existing = portfolio.find(p => p.coin === coin);
-
   if (existing) {
     existing.amount += amount;
   } else {
@@ -846,9 +1147,9 @@ async function searchCrypto() {
     const coin = d[query];
 
     if (coin?.usd) {
-      const change    = coin.usd_24h_change || 0;
-      const arrow     = change >= 0 ? "▲" : "▼";
-      const chgColor  = change >= 0 ? "#00ff88" : "#ff4d4d";
+      const change   = coin.usd_24h_change || 0;
+      const arrow    = change >= 0 ? "▲" : "▼";
+      const chgColor = change >= 0 ? "#00ff88" : "#ff4d4d";
 
       el.innerHTML = `
         <div class="mover-card" style="cursor:default;">
@@ -885,8 +1186,8 @@ function searchStock() {
 
   if (!query) { el.innerHTML = ""; return; }
 
-  const tvSymbol  = `NASDAQ:${query}`;
-  const tvParams  = encodeURIComponent(JSON.stringify({
+  const tvSymbol = `NASDAQ:${query}`;
+  const tvParams = encodeURIComponent(JSON.stringify({
     symbol: tvSymbol, dateRange: "1D",
     colorTheme: "dark", isTransparent: true, autosize: true
   }));
@@ -950,11 +1251,15 @@ async function loadStockNews() {
 function showTab(tab, e) {
   document.getElementById("crypto").style.display = tab === "crypto" ? "block" : "none";
   document.getElementById("stocks").style.display = tab === "stocks" ? "block" : "none";
+  document.getElementById("tools").style.display  = tab === "tools"  ? "block" : "none";
+
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   e.target.classList.add("active");
+
+  if (tab === "tools") renderTools();
 }
 
-// ── DAILY VERSE (UPGRADED) ─────────────────────────────
+// ── DAILY VERSE ────────────────────────────────────────
 
 let verseIndex = 0;
 
@@ -975,9 +1280,7 @@ function renderVerse() {
   const container = document.getElementById("dailyVerse");
 
   const existing = container.querySelector(".verse-card");
-  if (existing) {
-    existing.classList.add("fade-out");
-  }
+  if (existing) existing.classList.add("fade-out");
 
   setTimeout(() => {
     container.innerHTML = `
@@ -1003,25 +1306,16 @@ function prevVerse() {
 function loadVerse() {
   verseIndex = new Date().getDate() % verses.length;
   renderVerse();
-
-  setInterval(() => {
-    nextVerse();
-  }, 900000);
+  setInterval(nextVerse, 900000);
 }
 
-// ── VERSE SWIPE SUPPORT ─────────────────────────────
+// ── VERSE SWIPE ────────────────────────────────────────
 
 let touchStartX = 0;
 let touchEndX   = 0;
 
-document.addEventListener("touchstart", (e) => {
-  touchStartX = e.changedTouches[0].screenX;
-});
-
-document.addEventListener("touchend", (e) => {
-  touchEndX = e.changedTouches[0].screenX;
-  handleSwipe();
-});
+document.addEventListener("touchstart", (e) => { touchStartX = e.changedTouches[0].screenX; });
+document.addEventListener("touchend",   (e) => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); });
 
 function handleSwipe() {
   const diff = touchStartX - touchEndX;
@@ -1030,9 +1324,7 @@ function handleSwipe() {
 }
 
 document.addEventListener("click", (e) => {
-  if (e.target.closest("#dailyVerse")) {
-    nextVerse();
-  }
+  if (e.target.closest("#dailyVerse")) nextVerse();
 });
 
 // ── INIT ───────────────────────────────────────────────
