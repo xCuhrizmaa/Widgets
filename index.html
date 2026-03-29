@@ -3,7 +3,6 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body {
   margin: 0;
@@ -11,7 +10,6 @@ body {
   color: white;
   font-family: -apple-system, BlinkMacSystemFont;
 }
-
 .ticker {
   width: 100%;
   overflow: hidden;
@@ -20,7 +18,6 @@ body {
   padding: 8px 0;
   cursor: default;
 }
-
 .ticker-track {
   display: flex;
   will-change: transform;
@@ -28,37 +25,25 @@ body {
   white-space: nowrap;
   width: max-content;
 }
-
 .ticker-item {
   margin-right: 50px;
   flex-shrink: 0;
   display: inline-block;
 }
-
 .header { padding: 15px; border-bottom: 1px solid #222; }
 .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-.header-card {
-  background: #161b22;
-  padding: 12px;
-  border-radius: 10px;
-}
-
+.header-card { background: #161b22; padding: 12px; border-radius: 10px; }
 .label { font-size: 12px; color: #888; }
 .value { font-weight: bold; margin-top: 5px; }
-
 .tabs {
   display: flex;
   justify-content: space-around;
   padding: 15px;
   border-bottom: 1px solid #222;
 }
-
-.tab { color: #888; cursor: pointer; }
+.tab { color: #888; cursor: pointer; font-size: 14px; padding: 4px 8px; }
 .tab.active { color: #00ff88; }
-
 .list { padding: 10px; }
-
 .card {
   background: #161b22;
   margin: 8px 0;
@@ -66,34 +51,18 @@ body {
   padding: 15px;
   cursor: pointer;
 }
-
-.row {
-  display: flex;
-  justify-content: space-between;
-}
-
+.row { display: flex; justify-content: space-between; }
 .green  { color: #00ff88; }
 .red    { color: #ff4d4d; }
 .yellow { color: #ffd166; }
-
-.ai {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #aaa;
-}
-
-.confidence {
-  font-size: 12px;
-  margin-top: 3px;
-}
-
+.ai { margin-top: 6px; font-size: 12px; color: #aaa; }
+.confidence { font-size: 12px; margin-top: 3px; }
 .chart-container {
   margin-top: 10px;
   border-radius: 10px;
   overflow: hidden;
   height: 250px;
 }
-
 .news-card {
   background: #161b22;
   padding: 12px;
@@ -101,19 +70,8 @@ body {
   margin-bottom: 10px;
   cursor: pointer;
 }
-
-.news-title {
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-.news-source {
-  font-size: 11px;
-  color: #888;
-}
-
-/* ── VERSE STYLES ───────────────────────────── */
-
+.news-title { font-size: 14px; margin-bottom: 6px; }
+.news-source { font-size: 11px; color: #888; }
 .verse-card {
   background: #161b22;
   margin: 10px 15px;
@@ -124,136 +82,114 @@ body {
   transition: all 0.4s ease;
   box-shadow: 0 0 0px rgba(0,255,136,0.0);
 }
-
-.verse-card.fade-out {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.verse-card.fade-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.verse-card:hover {
-  box-shadow: 0 0 12px rgba(0,255,136,0.15);
-}
-
-.verse-text {
-  font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 6px;
-}
-
-.verse-ref {
-  font-size: 12px;
-  color: #888;
-}
-
-/* ── MOVER STYLES ───────────────────────────── */
-
-.mover-card {
-  background: #161b22;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-
-.mover-title {
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 6px;
-}
-
-.mover-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-/* ── INPUT STYLES ───────────────────────────── */
-
+.verse-card.fade-out { opacity: 0; transform: translateY(10px); }
+.verse-card.fade-in  { opacity: 1; transform: translateY(0); }
+.verse-card:hover { box-shadow: 0 0 12px rgba(0,255,136,0.15); }
+.verse-text { font-size: 14px; line-height: 1.5; margin-bottom: 6px; }
+.verse-ref  { font-size: 12px; color: #888; }
+.mover-card { background: #161b22; padding: 12px; border-radius: 10px; margin-bottom: 10px; }
+.mover-title { font-size: 13px; color: #888; margin-bottom: 6px; }
+.mover-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
 .dash-input {
-  width: 100%;
-  background: #0d1117;
-  border: 1px solid #333;
-  border-radius: 8px;
-  padding: 10px;
-  color: white;
-  font-size: 14px;
-  box-sizing: border-box;
-  margin-bottom: 10px;
-  outline: none;
+  width: 100%; background: #0d1117; border: 1px solid #333;
+  border-radius: 8px; padding: 10px; color: white; font-size: 14px;
+  box-sizing: border-box; margin-bottom: 10px; outline: none;
 }
-
-.dash-input:focus {
-  border-color: #00ff88;
-}
-
+.dash-input:focus { border-color: #00ff88; }
 .dash-select {
-  width: 100%;
-  background: #0d1117;
-  border: 1px solid #333;
-  border-radius: 8px;
-  padding: 10px;
-  color: white;
-  font-size: 14px;
-  box-sizing: border-box;
-  margin-bottom: 10px;
-  outline: none;
+  width: 100%; background: #0d1117; border: 1px solid #333;
+  border-radius: 8px; padding: 10px; color: white; font-size: 14px;
+  box-sizing: border-box; margin-bottom: 10px; outline: none;
 }
-
-.dash-select:focus {
-  border-color: #00ff88;
-}
-
+.dash-select:focus { border-color: #00ff88; }
 .calc-result {
-  background: #0d1117;
-  border-radius: 8px;
-  padding: 12px;
-  margin-top: 4px;
-  font-size: 14px;
-  line-height: 1.8;
+  background: #0d1117; border-radius: 8px; padding: 12px;
+  margin-top: 4px; font-size: 14px; line-height: 1.8;
 }
-
-/* ── TOOLS INPUT STYLES ─────────────────────── */
-
+/* ── TOOLS ── */
 .tool-input {
-  width: 100%;
-  background: #0d1117;
-  border: 1px solid #333;
-  border-radius: 8px;
-  padding: 10px;
-  color: white;
-  font-size: 14px;
-  box-sizing: border-box;
-  margin-bottom: 8px;
-  outline: none;
+  width: 100%; background: #0d1117; border: 1px solid #333;
+  border-radius: 8px; padding: 10px; color: white; font-size: 14px;
+  box-sizing: border-box; margin-bottom: 8px; outline: none;
 }
-
-.tool-input:focus {
-  border-color: #00ff88;
-}
-
+.tool-input:focus { border-color: #00ff88; }
 .tool-btn {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  background: #00ff88;
-  color: #0d1117;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
+  padding: 11px 16px; border: none; border-radius: 8px;
+  font-size: 14px; font-weight: bold; cursor: pointer;
 }
-
-.tool-btn:active {
-  opacity: 0.8;
+.tool-btn:active { opacity: 0.8; }
+.tool-btn-green { background: #00ff88; color: #0d1117; }
+.tool-btn-red   { background: #ff4d4d; color: white; }
+.tool-btn-gray  { background: #21262d; color: #ccc; }
+/* ── PAPER TRADING SUB-TABS ── */
+.pt-tabs {
+  display: flex;
+  border-bottom: 1px solid #222;
+  margin-bottom: 12px;
 }
+.pt-tab {
+  flex: 1; text-align: center; padding: 10px 4px;
+  font-size: 13px; color: #888; cursor: pointer;
+}
+.pt-tab.active { color: #00ff88; border-bottom: 2px solid #00ff88; }
+/* ── MINI CHART ── */
+.perf-chart-wrap {
+  background: #0d1117; border-radius: 10px; padding: 10px;
+  margin-bottom: 12px; position: relative; height: 120px;
+}
+canvas#perfChart { width: 100% !important; height: 100% !important; }
+/* ── STAT CARDS ── */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.stat-card { background: #161b22; border-radius: 10px; padding: 12px; }
+.stat-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+.stat-val   { font-size: 16px; font-weight: bold; }
+/* ── POSITION CARD ── */
+.pos-card {
+  background: #161b22; border-radius: 10px; padding: 12px;
+  margin-bottom: 8px;
+}
+.pos-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.pos-symbol { font-weight: bold; font-size: 15px; }
+.pos-pnl    { font-size: 15px; font-weight: bold; }
+.pos-detail { font-size: 12px; color: #888; }
+/* ── ORDER CARD ── */
+.order-card {
+  background: #161b22; border-radius: 10px; padding: 12px;
+  margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+}
+.order-info  { font-size: 13px; }
+.order-badge {
+  font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: bold;
+}
+.badge-pending  { background: #ffd16633; color: #ffd166; }
+.badge-filled   { background: #00ff8833; color: #00ff88; }
+.badge-canceled { background: #ff4d4d33; color: #ff4d4d; }
+/* ── SETUP MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal-box {
+  background: #161b22; border-radius: 16px; padding: 28px 22px;
+  width: 88%; max-width: 360px; text-align: center;
+}
+.modal-title { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+.modal-sub   { font-size: 13px; color: #888; margin-bottom: 20px; }
 </style>
-
 </head>
 <body>
+
+<!-- ── SETUP MODAL ── -->
+
+<div id="setupModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">💼 Paper Trading Setup</div>
+    <div class="modal-sub">Set your starting balance to begin.</div>
+    <input id="setupBalance" class="tool-input" type="number" placeholder="e.g. 10000" style="font-size:18px;text-align:center;margin-bottom:16px;" />
+    <button class="tool-btn tool-btn-green" style="width:100%;padding:14px;font-size:15px;" onclick="confirmSetup()">Start Trading</button>
+  </div>
+</div>
 
 <div class="ticker" id="tickerOuter">
   <div id="tickerTrack" class="ticker-track">
@@ -271,7 +207,6 @@ body {
 </div>
 
 <div id="dailyVerse"></div>
-
 <div id="topMovers" style="padding:15px"></div>
 
 <div style="padding:15px">
@@ -279,43 +214,7 @@ body {
   <div id="aiInsight" class="news-card" style="cursor:default;">Loading insight...</div>
 </div>
 
-<!-- ── CRYPTO CALCULATOR ─────────────────────── -->
-
-<div style="padding:15px">
-  <div style="font-weight:bold;margin-bottom:10px;">🧮 Crypto Calculator</div>
-  <div class="news-card" style="cursor:default;">
-    <select id="calcCoin" class="dash-select">
-      <option value="bitcoin">BTC</option>
-      <option value="hedera-hashgraph">HBAR</option>
-      <option value="ripple">XRP</option>
-      <option value="chainlink">LINK</option>
-      <option value="solana">SOL</option>
-    </select>
-    <input id="calcAmount" class="dash-input" placeholder="Holdings (e.g. 500)" type="number" />
-    <input id="calcTarget" class="dash-input" placeholder="Target Price (e.g. 3.45)" type="number" />
-    <div id="calcResult" class="calc-result" style="display:none;"></div>
-  </div>
-</div>
-
-<!-- ── PORTFOLIO ─────────────────────────────── -->
-
-<div style="padding:15px">
-  <div style="font-weight:bold;margin-bottom:10px;">💼 My Portfolio</div>
-  <div class="news-card" style="cursor:default;">
-    <select id="portfolioCoin" class="dash-select">
-      <option value="bitcoin">BTC</option>
-      <option value="hedera-hashgraph">HBAR</option>
-      <option value="ripple">XRP</option>
-      <option value="chainlink">LINK</option>
-      <option value="solana">SOL</option>
-    </select>
-    <input id="portfolioAmount" class="dash-input" placeholder="Amount (e.g. 500)" type="number" />
-    <button onclick="addHolding()" style="width:100%;background:#00ff88;color:#0d1117;border:none;border-radius:8px;padding:10px;font-size:14px;font-weight:bold;cursor:pointer;">Add Holding</button>
-  </div>
-  <div id="portfolioList" style="margin-top:10px;"></div>
-</div>
-
-<!-- ── TABS ──────────────────────────────────── -->
+<!-- ── MAIN TABS ── -->
 
 <div class="tabs">
   <div class="tab active" onclick="showTab('crypto', event)">Crypto</div>
@@ -325,14 +224,12 @@ body {
 
 <div id="crypto" class="list"></div>
 <div id="stocks" class="list" style="display:none;"></div>
-<div id="tools" class="list" style="display:none;"></div>
+<div id="tools" class="list" style="display:none;padding:10px;"></div>
 
 <div style="padding:15px">
   <div style="font-weight:bold;margin-bottom:10px;">🪙 Crypto News</div>
   <div id="cryptoNews"></div>
 </div>
-
-<!-- ── CRYPTO SEARCH ─────────────────────────── -->
 
 <div style="padding:15px">
   <div style="font-weight:bold;margin-bottom:10px;">🔍 Search Any Crypto</div>
@@ -345,8 +242,6 @@ body {
   <div id="stockNews"></div>
 </div>
 
-<!-- ── STOCK SEARCH ──────────────────────────── -->
-
 <div style="padding:15px">
   <div style="font-weight:bold;margin-bottom:10px;">📊 Search Any Stock</div>
   <input id="stockSearch" class="dash-input" placeholder="e.g. AAPL, TSLA, MSFT..." />
@@ -354,7 +249,6 @@ body {
 </div>
 
 <script>
-
 // ── GLOBALS ────────────────────────────────────────────
 let expanded      = null;
 let cryptoCache   = null;
@@ -362,11 +256,7 @@ let sp500Cache    = null;
 let lastTickerKey = "";
 
 // ── TICKER ENGINE ──────────────────────────────────────
-
-let tickerX      = 0;
-let tickerHalfW  = 0;
-let tickerPaused = false;
-let tickerRAF    = null;
+let tickerX = 0, tickerHalfW = 0, tickerPaused = false, tickerRAF = null;
 const TICKER_SPEED = 0.5;
 
 function tickerStep() {
@@ -377,7 +267,6 @@ function tickerStep() {
   }
   tickerRAF = requestAnimationFrame(tickerStep);
 }
-
 document.getElementById("tickerOuter").addEventListener("touchstart", () => { tickerPaused = true; });
 document.getElementById("tickerOuter").addEventListener("touchend",   () => { tickerPaused = false; });
 document.getElementById("tickerOuter").addEventListener("mouseenter", () => { tickerPaused = true; });
@@ -390,10 +279,9 @@ function startTicker() {
 }
 
 // ── UTILS ──────────────────────────────────────────────
-
-function formatPrice(p) {
-  return p >= 1 ? p.toFixed(2) : p.toFixed(5);
-}
+function formatPrice(p) { return p >= 1 ? p.toFixed(2) : p.toFixed(5); }
+function fmt$(n) { return "$" + Math.abs(n).toFixed(2); }
+function fmtPct(n) { return (n >= 0 ? "+" : "") + n.toFixed(2) + "%"; }
 
 function getInsight(change) {
   if (change > 5)  return "🚀 Strong upward momentum";
@@ -402,32 +290,23 @@ function getInsight(change) {
   if (change < -2) return "⚠️ Pullback";
   return "➖ Consolidating";
 }
-
 function getConfidence(change) {
   return Math.max(0, Math.min(100, Math.round(50 + change * 4)));
 }
 
 // ── S&P 500 ────────────────────────────────────────────
-
 async function loadSP500() {
   try {
     const res  = await fetch("/sp500");
     const data = await res.json();
-    if (data && typeof data.price === "number" && typeof data.change === "number") {
-      return data;
-    }
+    if (data && typeof data.price === "number") return data;
     return null;
-  } catch (err) {
-    console.error("SP500 fetch error:", err);
-    return null;
-  }
+  } catch { return null; }
 }
 
 // ── TICKER BUILD ───────────────────────────────────────
-
 async function updateTicker() {
   if (!cryptoCache) return;
-
   const freshSP = await loadSP500();
   if (freshSP) sp500Cache = freshSP;
 
@@ -439,68 +318,40 @@ async function updateTicker() {
     { name: "SOL",  data: cryptoCache.solana }
   ];
 
-  const newKey = cryptoItems.map(i =>
-    i.data ? `${i.name}:${i.data.usd}:${i.data.usd_24h_change}` : ""
-  ).join("|") +
-  (sp500Cache ? `|SP:${sp500Cache.price}:${sp500Cache.change}` : "");
-
+  const newKey = cryptoItems.map(i => i.data ? `${i.name}:${i.data.usd}:${i.data.usd_24h_change}` : "").join("|") +
+    (sp500Cache ? `|SP:${sp500Cache.price}:${sp500Cache.change}` : "");
   if (newKey === lastTickerKey) return;
   lastTickerKey = newKey;
 
   let html = "";
-
   cryptoItems.forEach(({ name, data: d }) => {
     if (!d) return;
     const change = d.usd_24h_change;
     const arrow  = change >= 0 ? "▲" : "▼";
     const color  = change >= 0 ? "#00ff88" : "#ff4d4d";
-    html += `
-      <span class="ticker-item">
-        <span style="color:#ccc">${name}</span>
-        $${formatPrice(d.usd)}
-        <span style="color:${color}">${arrow} ${Math.abs(change).toFixed(2)}%</span>
-      </span>
-    `;
+    html += `<span class="ticker-item"><span style="color:#ccc">${name}</span> $${formatPrice(d.usd)} <span style="color:${color}">${arrow} ${Math.abs(change).toFixed(2)}%</span></span>`;
   });
-
   if (sp500Cache) {
     const arrow = sp500Cache.change >= 0 ? "▲" : "▼";
     const color = sp500Cache.change >= 0 ? "#00ff88" : "#ff4d4d";
-    html += `
-      <span class="ticker-item">
-        <span style="color:#ccc">S&P 500</span>
-        $${sp500Cache.price.toFixed(2)}
-        <span style="color:${color}">${arrow} ${Math.abs(sp500Cache.change).toFixed(2)}%</span>
-      </span>
-    `;
+    html += `<span class="ticker-item"><span style="color:#ccc">S&P 500</span> $${sp500Cache.price.toFixed(2)} <span style="color:${color}">${arrow} ${Math.abs(sp500Cache.change).toFixed(2)}%</span></span>`;
   }
 
   const track = document.getElementById("tickerTrack");
   track.innerHTML = html + html;
-
-  setTimeout(() => {
-    tickerHalfW = track.scrollWidth / 2;
-    tickerX = 0;
-  }, 100);
+  setTimeout(() => { tickerHalfW = track.scrollWidth / 2; tickerX = 0; }, 100);
 }
 
 // ── EXPAND ─────────────────────────────────────────────
-
 function toggleExpand(symbol) {
   expanded = expanded === symbol ? null : symbol;
-  if (document.getElementById("crypto").style.display !== "none") {
-    renderCrypto();
-  } else {
-    renderStocks();
-  }
+  document.getElementById("crypto").style.display !== "none" ? renderCrypto() : renderStocks();
 }
 
 // ── CRYPTO LIST ────────────────────────────────────────
-
 function renderCrypto() {
   const el = document.getElementById("crypto");
   if (!cryptoCache) return;
-
   const map = {
     BTC:  { data: cryptoCache.bitcoin,            tvSymbol: "BTCUSD"  },
     HBAR: { data: cryptoCache["hedera-hashgraph"], tvSymbol: "HBARUSD" },
@@ -508,54 +359,32 @@ function renderCrypto() {
     LINK: { data: cryptoCache.chainlink,          tvSymbol: "LINKUSD" },
     SOL:  { data: cryptoCache.solana,             tvSymbol: "SOLUSD"  }
   };
-
   let html = "";
-
   Object.entries(map).forEach(([symbol, { data: d, tvSymbol }]) => {
     if (!d) return;
-
     const insight    = getInsight(d.usd_24h_change);
     const confidence = getConfidence(d.usd_24h_change);
     const confColor  = confidence > 70 ? "green" : confidence > 40 ? "yellow" : "red";
     const chgColor   = d.usd_24h_change >= 0 ? "green" : "red";
     const isExpanded = expanded === symbol;
-
-    const tvParams = encodeURIComponent(JSON.stringify({
-      symbol: tvSymbol, dateRange: "1D",
-      colorTheme: "dark", isTransparent: true, autosize: true
-    }));
-
+    const tvParams   = encodeURIComponent(JSON.stringify({ symbol: tvSymbol, dateRange: "1D", colorTheme: "dark", isTransparent: true, autosize: true }));
     html += `
       <div class="card" onclick="toggleExpand('${symbol}')">
         <div class="row">
           <div>${symbol}</div>
-          <div style="text-align:right">
-            $${formatPrice(d.usd)}<br>
-            <span class="${chgColor}">${d.usd_24h_change.toFixed(2)}%</span>
-          </div>
+          <div style="text-align:right">$${formatPrice(d.usd)}<br><span class="${chgColor}">${d.usd_24h_change.toFixed(2)}%</span></div>
         </div>
         <div class="ai">${insight}</div>
         <div class="confidence ${confColor}">Confidence: ${confidence}%</div>
-        ${isExpanded ? `
-          <div class="chart-container">
-            <iframe
-              src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${tvParams}"
-              style="width:100%;height:100%;border:none;"
-            ></iframe>
-          </div>
-        ` : ""}
-      </div>
-    `;
+        ${isExpanded ? `<div class="chart-container"><iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${tvParams}" style="width:100%;height:100%;border:none;"></iframe></div>` : ""}
+      </div>`;
   });
-
   el.innerHTML = html;
 }
 
 // ── TOP MOVERS ─────────────────────────────────────────
-
 function renderTopMovers() {
   if (!cryptoCache) return;
-
   const coins = [
     { name: "BTC",  data: cryptoCache.bitcoin },
     { name: "HBAR", data: cryptoCache["hedera-hashgraph"] },
@@ -563,41 +392,24 @@ function renderTopMovers() {
     { name: "LINK", data: cryptoCache.chainlink },
     { name: "SOL",  data: cryptoCache.solana }
   ].filter(c => c.data);
-
   const sorted  = coins.sort((a, b) => b.data.usd_24h_change - a.data.usd_24h_change);
   const gainers = sorted.slice(0, 2);
   const losers  = sorted.slice(-2).reverse();
-
-  const el = document.getElementById("topMovers");
-
-  el.innerHTML = `
+  document.getElementById("topMovers").innerHTML = `
     <div style="font-weight:bold;margin-bottom:10px;">📊 Top Movers</div>
     <div class="mover-card">
       <div class="mover-title">🚀 Top Gainers</div>
-      ${gainers.map(c => `
-        <div class="mover-row">
-          <span>${c.name}</span>
-          <span class="green">+${c.data.usd_24h_change.toFixed(2)}%</span>
-        </div>
-      `).join("")}
+      ${gainers.map(c => `<div class="mover-row"><span>${c.name}</span><span class="green">+${c.data.usd_24h_change.toFixed(2)}%</span></div>`).join("")}
     </div>
     <div class="mover-card">
       <div class="mover-title">🔻 Top Losers</div>
-      ${losers.map(c => `
-        <div class="mover-row">
-          <span>${c.name}</span>
-          <span class="red">${c.data.usd_24h_change.toFixed(2)}%</span>
-        </div>
-      `).join("")}
-    </div>
-  `;
+      ${losers.map(c => `<div class="mover-row"><span>${c.name}</span><span class="red">${c.data.usd_24h_change.toFixed(2)}%</span></div>`).join("")}
+    </div>`;
 }
 
 // ── STOCKS LIST ────────────────────────────────────────
-
 function renderStocks() {
   const el = document.getElementById("stocks");
-
   const stocks = [
     { symbol: "AMD",  tvSymbol: "NASDAQ:AMD"  },
     { symbol: "NVDA", tvSymbol: "NASDAQ:NVDA" },
@@ -605,371 +417,54 @@ function renderStocks() {
     { symbol: "SCHD", tvSymbol: "AMEX:SCHD"   },
     { symbol: "HOOD", tvSymbol: "NASDAQ:HOOD" }
   ];
-
   let html = "";
-
   stocks.forEach(({ symbol, tvSymbol }) => {
     const isExpanded = expanded === symbol;
-
-    const tvParams = encodeURIComponent(JSON.stringify({
-      symbol: tvSymbol, dateRange: "1D",
-      colorTheme: "dark", isTransparent: true, autosize: true
-    }));
-
+    const tvParams   = encodeURIComponent(JSON.stringify({ symbol: tvSymbol, dateRange: "1D", colorTheme: "dark", isTransparent: true, autosize: true }));
     html += `
       <div class="card" onclick="toggleExpand('${symbol}')">
-        <div class="row">
-          <div>${symbol}</div>
-          <div style="color:#888;font-size:12px;">Tap to expand</div>
-        </div>
-        ${isExpanded ? `
-          <div class="chart-container">
-            <iframe
-              src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${tvParams}"
-              style="width:100%;height:100%;border:none;"
-            ></iframe>
-          </div>
-        ` : ""}
-      </div>
-    `;
+        <div class="row"><div>${symbol}</div><div style="color:#888;font-size:12px;">Tap to expand</div></div>
+        ${isExpanded ? `<div class="chart-container"><iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${tvParams}" style="width:100%;height:100%;border:none;"></iframe></div>` : ""}
+      </div>`;
   });
-
   el.innerHTML = html;
 }
 
-// ── TOOLS TAB ──────────────────────────────────────────
-
-function renderTools() {
-  const el = document.getElementById("tools");
-
-  el.innerHTML = `
-    <div class="card" style="cursor:default;">
-      <div style="font-weight:bold;margin-bottom:10px;">🧮 Quick Calculator</div>
-      <select id="toolCalcCoin" class="dash-select">
-        <option value="BTC">BTC</option>
-        <option value="HBAR">HBAR</option>
-        <option value="XRP">XRP</option>
-        <option value="LINK">LINK</option>
-        <option value="SOL">SOL</option>
-      </select>
-      <input id="toolCalcAmount" class="tool-input" placeholder="Amount (e.g. 500)" type="number" />
-      <input id="toolCalcTarget" class="tool-input" placeholder="Target Price (e.g. 3.45)" type="number" />
-      <button class="tool-btn" onclick="runCalc()">Calculate</button>
-      <div id="toolCalcResult" style="margin-top:10px;font-size:14px;line-height:1.8;"></div>
-    </div>
-
-    <div class="card" style="cursor:default;">
-      <div style="font-weight:bold;margin-bottom:10px;">💼 Portfolio</div>
-      <select id="portCoin" class="dash-select">
-        <option value="bitcoin">BTC</option>
-        <option value="hedera-hashgraph">HBAR</option>
-        <option value="ripple">XRP</option>
-        <option value="chainlink">LINK</option>
-        <option value="solana">SOL</option>
-      </select>
-      <input id="portAmount" class="tool-input" placeholder="Amount" type="number" />
-      <button class="tool-btn" onclick="addHoldingFromTools()">Add Holding</button>
-      <div id="toolsPortfolioList" style="margin-top:10px;"></div>
-    </div>
-
-    <div class="card" style="cursor:default;">
-      <div style="font-weight:bold;margin-bottom:10px;">📊 Paper Trading</div>
-      <div style="color:#888;font-size:13px;margin-bottom:10px;">
-        Balance: <span style="color:#00ff88;font-weight:bold;">$<span id="paperBalance">${paperBalance.toFixed(2)}</span></span>
-      </div>
-      <select id="paperCoin" class="dash-select">
-        <option value="BTC">BTC</option>
-        <option value="HBAR">HBAR</option>
-        <option value="XRP">XRP</option>
-        <option value="LINK">LINK</option>
-        <option value="SOL">SOL</option>
-      </select>
-      <input id="paperAmount" class="tool-input" placeholder="Amount of coins" type="number" />
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <button class="tool-btn" style="background:#00ff88;color:#0d1117;" onclick="paperBuy()">Buy</button>
-        <button class="tool-btn" style="background:#ff4d4d;color:white;" onclick="paperSell()">Sell</button>
-      </div>
-      <div id="paperPortfolio" style="margin-top:10px;"></div>
-    </div>
-  `;
-
-  renderToolsPortfolio();
-  renderPaperPortfolio();
-}
-
-// ── TOOLS CALCULATOR ───────────────────────────────────
-
-function runCalc() {
-  const coinLabel = document.getElementById("toolCalcCoin").value;
-  const amount    = parseFloat(document.getElementById("toolCalcAmount").value);
-  const target    = parseFloat(document.getElementById("toolCalcTarget").value);
-  const resultEl  = document.getElementById("toolCalcResult");
-
-  if (!cryptoCache || !amount || !target) {
-    resultEl.innerHTML = "<span style='color:#888'>Enter amount and target price.</span>";
-    return;
-  }
-
-  const coinMap = {
-    BTC: cryptoCache.bitcoin,
-    HBAR: cryptoCache["hedera-hashgraph"],
-    XRP: cryptoCache.ripple,
-    LINK: cryptoCache.chainlink,
-    SOL: cryptoCache.solana
-  };
-
-  const price = coinMap[coinLabel]?.usd;
-  if (!price) return;
-
-  const currentVal = amount * price;
-  const futureVal  = amount * target;
-  const gain       = futureVal - currentVal;
-  const gainPct    = ((futureVal - currentVal) / currentVal * 100).toFixed(2);
-  const isUp       = futureVal >= currentVal;
-  const gainColor  = isUp ? "#00ff88" : "#ff4d4d";
-
-  resultEl.innerHTML = `
-    <div style="color:#888;font-size:12px;margin-bottom:6px;">${coinLabel} @ $${formatPrice(price)} now</div>
-    <div>Now: <span style="color:white;font-weight:bold;">$${currentVal.toFixed(2)}</span></div>
-    <div>At target: <span style="color:${gainColor};font-weight:bold;">$${futureVal.toFixed(2)}</span></div>
-    <div style="color:${gainColor};margin-top:4px;">${isUp ? "+" : ""}$${gain.toFixed(2)} (${isUp ? "+" : ""}${gainPct}%) ${isUp ? "🚀" : "📉"}</div>
-  `;
-}
-
-// ── TOOLS PORTFOLIO (mirrors main portfolio) ────────────
-
-function addHoldingFromTools() {
-  const coin   = document.getElementById("portCoin").value;
-  const amount = parseFloat(document.getElementById("portAmount").value);
-
-  if (!amount || amount <= 0) return;
-
-  const existing = portfolio.find(p => p.coin === coin);
-  if (existing) {
-    existing.amount += amount;
-  } else {
-    portfolio.push({ coin, amount });
-  }
-
-  document.getElementById("portAmount").value = "";
-  savePortfolio();
-  renderPortfolio();
-  renderToolsPortfolio();
-}
-
-function renderToolsPortfolio() {
-  const el = document.getElementById("toolsPortfolioList");
-  if (!el) return;
-
-  if (!cryptoCache || portfolio.length === 0) {
-    el.innerHTML = "<div style='color:#888;font-size:13px;margin-top:8px;'>No holdings yet.</div>";
-    return;
-  }
-
-  const labels = {
-    "bitcoin": "BTC", "hedera-hashgraph": "HBAR",
-    "ripple": "XRP", "chainlink": "LINK", "solana": "SOL"
-  };
-
-  let total = 0;
-
-  el.innerHTML = portfolio.map(p => {
-    const price = cryptoCache[p.coin]?.usd || 0;
-    const value = p.amount * price;
-    total += value;
-    const label = labels[p.coin] || p.coin.toUpperCase();
-
-    return `
-      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #222;">
-        <span style="color:#ccc;">${label} — ${p.amount}</span>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="color:#00ff88;">$${value.toFixed(2)}</span>
-          <span onclick="removeHolding('${p.coin}');renderToolsPortfolio();" style="color:#ff4d4d;cursor:pointer;font-size:16px;">×</span>
-        </div>
-      </div>
-    `;
-  }).join("") + `
-    <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:bold;">
-      <span style="color:#888;">Total</span>
-      <span style="color:#00ff88;">$${total.toFixed(2)}</span>
-    </div>
-  `;
-}
-
-// ── PAPER TRADING ──────────────────────────────────────
-
-let paperBalance  = parseFloat(localStorage.getItem("paperBalance") || "10000");
-let paperHoldings = JSON.parse(localStorage.getItem("paperHoldings") || "[]");
-
-function savePaper() {
-  localStorage.setItem("paperBalance", paperBalance.toString());
-  localStorage.setItem("paperHoldings", JSON.stringify(paperHoldings));
-}
-
-function getCoinPrice(label) {
-  const coinMap = {
-    BTC: cryptoCache?.bitcoin,
-    HBAR: cryptoCache?.["hedera-hashgraph"],
-    XRP: cryptoCache?.ripple,
-    LINK: cryptoCache?.chainlink,
-    SOL: cryptoCache?.solana
-  };
-  return coinMap[label]?.usd || 0;
-}
-
-function paperBuy() {
-  const coin   = document.getElementById("paperCoin").value;
-  const amount = parseFloat(document.getElementById("paperAmount").value);
-  if (!amount || amount <= 0 || !cryptoCache) return;
-
-  const price = getCoinPrice(coin);
-  if (!price) return;
-
-  const cost = price * amount;
-  if (cost > paperBalance) {
-    alert("Not enough balance!");
-    return;
-  }
-
-  paperBalance -= cost;
-
-  const existing = paperHoldings.find(h => h.coin === coin);
-  if (existing) {
-    existing.amount += amount;
-    existing.avgPrice = ((existing.avgPrice * (existing.amount - amount)) + (price * amount)) / existing.amount;
-  } else {
-    paperHoldings.push({ coin, amount, avgPrice: price });
-  }
-
-  savePaper();
-  renderPaperPortfolio();
-}
-
-function paperSell() {
-  const coin   = document.getElementById("paperCoin").value;
-  const amount = parseFloat(document.getElementById("paperAmount").value);
-  if (!amount || amount <= 0 || !cryptoCache) return;
-
-  const price    = getCoinPrice(coin);
-  const existing = paperHoldings.find(h => h.coin === coin);
-
-  if (!existing || existing.amount < amount) {
-    alert("Not enough coins to sell!");
-    return;
-  }
-
-  paperBalance += price * amount;
-  existing.amount -= amount;
-
-  if (existing.amount <= 0) {
-    paperHoldings = paperHoldings.filter(h => h.coin !== coin);
-  }
-
-  savePaper();
-  renderPaperPortfolio();
-}
-
-function renderPaperPortfolio() {
-  const balEl = document.getElementById("paperBalance");
-  if (balEl) balEl.textContent = paperBalance.toFixed(2);
-
-  const el = document.getElementById("paperPortfolio");
-  if (!el) return;
-
-  if (paperHoldings.length === 0) {
-    el.innerHTML = "<div style='color:#888;font-size:13px;'>No paper trades yet.</div>";
-    return;
-  }
-
-  let portfolioValue = 0;
-
-  el.innerHTML = paperHoldings.map(h => {
-    const price    = getCoinPrice(h.coin);
-    const value    = h.amount * price;
-    const pnl      = value - (h.avgPrice * h.amount);
-    const pnlColor = pnl >= 0 ? "#00ff88" : "#ff4d4d";
-    portfolioValue += value;
-
-    return `
-      <div style="padding:8px 0;border-bottom:1px solid #222;">
-        <div style="display:flex;justify-content:space-between;">
-          <span style="font-weight:bold;">${h.coin}</span>
-          <span style="color:#00ff88;">$${value.toFixed(2)}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:3px;">
-          <span style="color:#888;font-size:12px;">${h.amount.toFixed(4)} @ $${formatPrice(h.avgPrice)}</span>
-          <span style="color:${pnlColor};font-size:12px;">${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}</span>
-        </div>
-      </div>
-    `;
-  }).join("") + `
-    <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:bold;">
-      <span style="color:#888;">Portfolio Value</span>
-      <span style="color:#00ff88;">$${portfolioValue.toFixed(2)}</span>
-    </div>
-  `;
-}
-
 // ── MARKET HEADER ──────────────────────────────────────
-
 async function loadMarket() {
   try {
     const res = await fetch("/market");
     const d   = await res.json();
-
-    document.getElementById("marketCap").textContent =
-      "$" + (d.data.total_market_cap.usd / 1e12).toFixed(2) + "T";
-
+    document.getElementById("marketCap").textContent = "$" + (d.data.total_market_cap.usd / 1e12).toFixed(2) + "T";
     const change   = d.data.market_cap_change_percentage_24h_usd;
     const changeEl = document.getElementById("marketChange");
     changeEl.textContent = change.toFixed(2) + "%";
     changeEl.className   = "value " + (change >= 0 ? "green" : "red");
-
-    document.getElementById("btcDom").textContent =
-      d.data.market_cap_percentage.btc.toFixed(1) + "%";
-
-  } catch {
-    document.getElementById("marketCap").textContent = "Unavailable";
-  }
+    document.getElementById("btcDom").textContent = d.data.market_cap_percentage.btc.toFixed(1) + "%";
+  } catch { document.getElementById("marketCap").textContent = "Unavailable"; }
 }
-
-// ── FEAR & GREED ───────────────────────────────────────
 
 async function loadFear() {
   try {
     const r = await fetch("https://api.alternative.me/fng/");
     const d = await r.json();
-    document.getElementById("fearValue").textContent =
-      d.data[0].value + " – " + d.data[0].value_classification;
-  } catch {
-    document.getElementById("fearValue").textContent = "--";
-  }
+    document.getElementById("fearValue").textContent = d.data[0].value + " – " + d.data[0].value_classification;
+  } catch { document.getElementById("fearValue").textContent = "--"; }
 }
-
-// ── CRYPTO FETCH ───────────────────────────────────────
 
 async function loadCrypto() {
   const el = document.getElementById("crypto");
-
-  if (!cryptoCache) {
-    el.innerHTML = "<div style='padding:10px;color:#888'>Loading...</div>";
-  }
-
+  if (!cryptoCache) el.innerHTML = "<div style='padding:10px;color:#888'>Loading...</div>";
   try {
     const res = await fetch("/crypto");
     cryptoCache = await res.json();
     renderCrypto();
     renderTopMovers();
-    renderPortfolio();
     await updateTicker();
   } catch {
-    if (!cryptoCache) {
-      el.innerHTML = "<div style='padding:10px;color:#ff4d4d'>Failed to load prices</div>";
-    }
+    if (!cryptoCache) el.innerHTML = "<div style='padding:10px;color:#ff4d4d'>Failed to load prices</div>";
   }
 }
-
-// ── AI INSIGHT ─────────────────────────────────────────
 
 async function loadAiInsight() {
   const el = document.getElementById("aiInsight");
@@ -977,292 +472,74 @@ async function loadAiInsight() {
     const r = await fetch("/ai-insight");
     const d = await r.json();
     el.textContent = d.text || "No insight available.";
-  } catch {
-    el.textContent = "Failed to load insight.";
-  }
-}
-
-// ── CRYPTO CALCULATOR (main section) ───────────────────
-
-function setupCalculator() {
-  const coinEl   = document.getElementById("calcCoin");
-  const amountEl = document.getElementById("calcAmount");
-  const targetEl = document.getElementById("calcTarget");
-  const resultEl = document.getElementById("calcResult");
-
-  function update() {
-    if (!cryptoCache) return;
-
-    const coin   = coinEl.value;
-    const amount = parseFloat(amountEl.value);
-    const target = parseFloat(targetEl.value);
-
-    if (!amount || !target) {
-      resultEl.style.display = "none";
-      resultEl.innerHTML = "";
-      return;
-    }
-
-    const price = cryptoCache[coin]?.usd;
-    if (!price) return;
-
-    const currentVal = amount * price;
-    const futureVal  = amount * target;
-    const gain       = futureVal - currentVal;
-    const gainPct    = ((futureVal - currentVal) / currentVal * 100).toFixed(2);
-    const isUp       = futureVal >= currentVal;
-    const arrow      = isUp ? "📈🚀" : "📉";
-    const gainColor  = isUp ? "#00ff88" : "#ff4d4d";
-
-    const labels = {
-      "bitcoin": "BTC", "hedera-hashgraph": "HBAR",
-      "ripple": "XRP", "chainlink": "LINK", "solana": "SOL"
-    };
-
-    resultEl.style.display = "block";
-    resultEl.innerHTML = `
-      <div style="color:#888;font-size:12px;margin-bottom:8px;">
-        ${labels[coin]} @ $${formatPrice(price)} now
-      </div>
-      <div style="margin-bottom:4px;">
-        Holdings: <span style="color:white">${amount} ${labels[coin]}</span>
-        <span style="color:#888"> ($${currentVal.toFixed(2)})</span>
-      </div>
-      <div style="margin-bottom:4px;">
-        Target: <span style="color:white">$${formatPrice(target)}</span>
-      </div>
-      <div style="margin-top:8px;font-size:15px;font-weight:bold;color:${gainColor};">
-        ${amount} ${labels[coin]} ~ $${futureVal.toFixed(2)} ${arrow}
-      </div>
-      <div style="color:${gainColor};font-size:12px;margin-top:2px;">
-        ${isUp ? "+" : ""}$${gain.toFixed(2)} (${isUp ? "+" : ""}${gainPct}%)
-      </div>
-    `;
-  }
-
-  coinEl.onchange   = update;
-  amountEl.oninput  = update;
-  targetEl.oninput  = update;
-}
-
-// ── PORTFOLIO ──────────────────────────────────────────
-
-let portfolio = JSON.parse(localStorage.getItem("portfolio") || "[]");
-
-function savePortfolio() {
-  localStorage.setItem("portfolio", JSON.stringify(portfolio));
-}
-
-function addHolding() {
-  const coin   = document.getElementById("portfolioCoin").value;
-  const amount = parseFloat(document.getElementById("portfolioAmount").value);
-
-  if (!amount || amount <= 0) return;
-
-  const existing = portfolio.find(p => p.coin === coin);
-  if (existing) {
-    existing.amount += amount;
-  } else {
-    portfolio.push({ coin, amount });
-  }
-
-  document.getElementById("portfolioAmount").value = "";
-  savePortfolio();
-  renderPortfolio();
-}
-
-function removeHolding(coin) {
-  portfolio = portfolio.filter(p => p.coin !== coin);
-  savePortfolio();
-  renderPortfolio();
-}
-
-function renderPortfolio() {
-  const el = document.getElementById("portfolioList");
-
-  if (!cryptoCache) {
-    el.innerHTML = "<div style='color:#888;font-size:13px;padding:8px 0'>Loading prices...</div>";
-    return;
-  }
-
-  if (portfolio.length === 0) {
-    el.innerHTML = "<div style='color:#888;font-size:13px;padding:8px 0'>No holdings yet. Add one above!</div>";
-    return;
-  }
-
-  const labels = {
-    "bitcoin": "BTC", "hedera-hashgraph": "HBAR",
-    "ripple": "XRP", "chainlink": "LINK", "solana": "SOL"
-  };
-
-  let total = 0;
-
-  el.innerHTML = portfolio.map(p => {
-    const price = cryptoCache[p.coin]?.usd || 0;
-    const value = p.amount * price;
-    total += value;
-    const label = labels[p.coin] || p.coin.toUpperCase();
-
-    return `
-      <div class="card" style="cursor:default;">
-        <div class="row">
-          <div style="font-weight:bold;">${label}</div>
-          <div style="display:flex;align-items:center;gap:12px;">
-            <span style="color:#00ff88;font-weight:bold;">$${value.toFixed(2)}</span>
-            <span onclick="removeHolding('${p.coin}')" style="color:#ff4d4d;font-size:18px;cursor:pointer;line-height:1;">×</span>
-          </div>
-        </div>
-        <div style="color:#888;font-size:12px;margin-top:4px;">
-          ${p.amount} coins @ $${formatPrice(price)}
-        </div>
-      </div>
-    `;
-  }).join("") + `
-    <div class="card" style="cursor:default;border:1px solid #00ff8833;">
-      <div class="row">
-        <div style="color:#888;">Total Value</div>
-        <div style="color:#00ff88;font-weight:bold;font-size:16px;">$${total.toFixed(2)}</div>
-      </div>
-    </div>
-  `;
+  } catch { el.textContent = "Failed to load insight."; }
 }
 
 // ── CRYPTO SEARCH ──────────────────────────────────────
-
 let cryptoSearchTimer = null;
-
 async function searchCrypto() {
-  const query  = document.getElementById("cryptoSearch").value.trim().toLowerCase();
-  const el     = document.getElementById("cryptoSearchResult");
-
+  const query = document.getElementById("cryptoSearch").value.trim().toLowerCase();
+  const el    = document.getElementById("cryptoSearchResult");
   if (!query) { el.innerHTML = ""; return; }
-
   el.innerHTML = "<div style='color:#888;font-size:13px;padding:8px 0'>Searching...</div>";
-
   try {
-    const r = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${query}&vs_currencies=usd&include_24hr_change=true`
-    );
+    const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${query}&vs_currencies=usd&include_24hr_change=true`);
     const d = await r.json();
     const coin = d[query];
-
     if (coin?.usd) {
-      const change   = coin.usd_24h_change || 0;
-      const arrow    = change >= 0 ? "▲" : "▼";
+      const change = coin.usd_24h_change || 0;
+      const arrow  = change >= 0 ? "▲" : "▼";
       const chgColor = change >= 0 ? "#00ff88" : "#ff4d4d";
-
-      el.innerHTML = `
-        <div class="mover-card" style="cursor:default;">
-          <div class="mover-row">
-            <span style="font-weight:bold;text-transform:uppercase;">${query}</span>
-            <span style="font-weight:bold;">$${formatPrice(coin.usd)}</span>
-          </div>
-          <div class="mover-row">
-            <span style="color:#888;font-size:12px;">24h Change</span>
-            <span style="color:${chgColor};font-size:12px;">${arrow} ${Math.abs(change).toFixed(2)}%</span>
-          </div>
-        </div>
-      `;
+      el.innerHTML = `<div class="mover-card" style="cursor:default;"><div class="mover-row"><span style="font-weight:bold;text-transform:uppercase;">${query}</span><span style="font-weight:bold;">$${formatPrice(coin.usd)}</span></div><div class="mover-row"><span style="color:#888;font-size:12px;">24h Change</span><span style="color:${chgColor};font-size:12px;">${arrow} ${Math.abs(change).toFixed(2)}%</span></div></div>`;
     } else {
       el.innerHTML = "<div style='color:#888;font-size:13px;padding:8px 0'>Not found — try the full CoinGecko ID (e.g. \"dogecoin\", \"cardano\")</div>";
     }
-  } catch {
-    el.innerHTML = "<div style='color:#ff4d4d;font-size:13px;padding:8px 0'>Error fetching data</div>";
-  }
+  } catch { el.innerHTML = "<div style='color:#ff4d4d;font-size:13px;padding:8px 0'>Error fetching data</div>"; }
 }
-
-document.getElementById("cryptoSearch").addEventListener("input", () => {
-  clearTimeout(cryptoSearchTimer);
-  cryptoSearchTimer = setTimeout(searchCrypto, 600);
-});
+document.getElementById("cryptoSearch").addEventListener("input", () => { clearTimeout(cryptoSearchTimer); cryptoSearchTimer = setTimeout(searchCrypto, 600); });
 
 // ── STOCK SEARCH ───────────────────────────────────────
-
 let stockSearchTimer = null;
-
 function searchStock() {
   const query = document.getElementById("stockSearch").value.trim().toUpperCase();
   const el    = document.getElementById("stockSearchResult");
-
   if (!query) { el.innerHTML = ""; return; }
-
   const tvSymbol = `NASDAQ:${query}`;
-  const tvParams = encodeURIComponent(JSON.stringify({
-    symbol: tvSymbol, dateRange: "1D",
-    colorTheme: "dark", isTransparent: true, autosize: true
-  }));
-
-  el.innerHTML = `
-    <div class="mover-card" style="cursor:default;">
-      <div style="font-size:13px;color:#888;margin-bottom:8px;">
-        ${query} — tap chart to interact
-      </div>
-      <div class="chart-container">
-        <iframe
-          src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${tvParams}"
-          style="width:100%;height:100%;border:none;"
-        ></iframe>
-      </div>
-    </div>
-  `;
+  const tvParams = encodeURIComponent(JSON.stringify({ symbol: tvSymbol, dateRange: "1D", colorTheme: "dark", isTransparent: true, autosize: true }));
+  el.innerHTML = `<div class="mover-card" style="cursor:default;"><div style="font-size:13px;color:#888;margin-bottom:8px;">${query} — tap chart to interact</div><div class="chart-container"><iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${tvParams}" style="width:100%;height:100%;border:none;"></iframe></div></div>`;
 }
-
-document.getElementById("stockSearch").addEventListener("input", () => {
-  clearTimeout(stockSearchTimer);
-  stockSearchTimer = setTimeout(searchStock, 600);
-});
+document.getElementById("stockSearch").addEventListener("input", () => { clearTimeout(stockSearchTimer); stockSearchTimer = setTimeout(searchStock, 600); });
 
 // ── NEWS ───────────────────────────────────────────────
-
 async function loadCryptoNews() {
   const el = document.getElementById("cryptoNews");
   try {
     const r = await fetch("https://min-api.cryptocompare.com/data/v2/news/?lang=EN");
     const d = await r.json();
-    el.innerHTML = d.Data.slice(0, 5).map(a => `
-      <div class="news-card" onclick="window.open('${a.url}', '_blank')">
-        <div class="news-title">${a.title}</div>
-        <div class="news-source">${a.source}</div>
-      </div>
-    `).join("");
-  } catch {
-    el.innerHTML = "<div style='color:#888'>Failed to load news</div>";
-  }
+    el.innerHTML = d.Data.slice(0, 5).map(a => `<div class="news-card" onclick="window.open('${a.url}','_blank')"><div class="news-title">${a.title}</div><div class="news-source">${a.source}</div></div>`).join("");
+  } catch { el.innerHTML = "<div style='color:#888'>Failed to load news</div>"; }
 }
-
 async function loadStockNews() {
   const el = document.getElementById("stockNews");
   try {
     const r = await fetch("https://financialmodelingprep.com/api/v3/stock_news?limit=5&apikey=demo");
     const d = await r.json();
-    el.innerHTML = d.map(a => `
-      <div class="news-card" onclick="window.open('${a.url}', '_blank')">
-        <div class="news-title">${a.title}</div>
-        <div class="news-source">${a.site}</div>
-      </div>
-    `).join("");
-  } catch {
-    el.innerHTML = "<div style='color:#888'>Failed to load news</div>";
-  }
+    el.innerHTML = d.map(a => `<div class="news-card" onclick="window.open('${a.url}','_blank')"><div class="news-title">${a.title}</div><div class="news-source">${a.site}</div></div>`).join("");
+  } catch { el.innerHTML = "<div style='color:#888'>Failed to load news</div>"; }
 }
 
 // ── NAV ────────────────────────────────────────────────
-
 function showTab(tab, e) {
   document.getElementById("crypto").style.display = tab === "crypto" ? "block" : "none";
   document.getElementById("stocks").style.display = tab === "stocks" ? "block" : "none";
   document.getElementById("tools").style.display  = tab === "tools"  ? "block" : "none";
-
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   e.target.classList.add("active");
-
   if (tab === "tools") renderTools();
 }
 
 // ── DAILY VERSE ────────────────────────────────────────
-
 let verseIndex = 0;
-
 const verses = [
   { text: "Commit your actions to the Lord, and your plans will succeed.", ref: "Proverbs 16:3 (NLT)" },
   { text: "Work willingly at whatever you do, as though you were working for the Lord.", ref: "Colossians 3:23 (NLT)" },
@@ -1274,61 +551,514 @@ const verses = [
   { text: "Good planning and hard work lead to prosperity.", ref: "Proverbs 21:5 (NLT)" },
   { text: "The blessing of the Lord makes a person rich.", ref: "Proverbs 10:22 (NLT)" }
 ];
-
 function renderVerse() {
   const v = verses[verseIndex];
   const container = document.getElementById("dailyVerse");
-
-  const existing = container.querySelector(".verse-card");
+  const existing  = container.querySelector(".verse-card");
   if (existing) existing.classList.add("fade-out");
-
   setTimeout(() => {
-    container.innerHTML = `
-      <div class="verse-card fade-in" id="verseCard">
-        <div style="font-size:11px;color:#00ff88;margin-bottom:6px;">DAILY FOUNDATION</div>
-        <div class="verse-text">"${v.text}"</div>
-        <div class="verse-ref">— ${v.ref}</div>
-      </div>
-    `;
+    container.innerHTML = `<div class="verse-card fade-in"><div style="font-size:11px;color:#00ff88;margin-bottom:6px;">DAILY FOUNDATION</div><div class="verse-text">"${v.text}"</div><div class="verse-ref">— ${v.ref}</div></div>`;
   }, 200);
 }
-
-function nextVerse() {
-  verseIndex = (verseIndex + 1) % verses.length;
-  renderVerse();
-}
-
-function prevVerse() {
-  verseIndex = (verseIndex - 1 + verses.length) % verses.length;
-  renderVerse();
-}
-
+function nextVerse() { verseIndex = (verseIndex + 1) % verses.length; renderVerse(); }
+function prevVerse() { verseIndex = (verseIndex - 1 + verses.length) % verses.length; renderVerse(); }
 function loadVerse() {
   verseIndex = new Date().getDate() % verses.length;
   renderVerse();
   setInterval(nextVerse, 900000);
 }
-
-// ── VERSE SWIPE ────────────────────────────────────────
-
-let touchStartX = 0;
-let touchEndX   = 0;
-
-document.addEventListener("touchstart", (e) => { touchStartX = e.changedTouches[0].screenX; });
-document.addEventListener("touchend",   (e) => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); });
-
+let touchStartX = 0, touchEndX = 0;
+document.addEventListener("touchstart", e => { touchStartX = e.changedTouches[0].screenX; });
+document.addEventListener("touchend",   e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); });
 function handleSwipe() {
   const diff = touchStartX - touchEndX;
   if (Math.abs(diff) < 40) return;
-  if (diff > 0) { nextVerse(); } else { prevVerse(); }
+  diff > 0 ? nextVerse() : prevVerse();
+}
+document.addEventListener("click", e => { if (e.target.closest("#dailyVerse")) nextVerse(); });
+
+// ═══════════════════════════════════════════════════════
+// ── TOOLS TAB ──────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+
+let activePTTab = "performance";
+
+function renderTools() {
+  const el = document.getElementById("tools");
+  el.innerHTML = `
+    <div style="margin-bottom:14px;">
+      <div style="font-weight:bold;font-size:16px;margin-bottom:4px;">📊 Paper Trading</div>
+      <div style="font-size:12px;color:#888;">Balance: <span id="ptBalanceDisplay" style="color:#00ff88;font-weight:bold;">$${paperBalance.toFixed(2)}</span>
+        <span onclick="resetPaperTrading()" style="color:#ff4d4d;font-size:11px;margin-left:12px;cursor:pointer;">Reset</span>
+      </div>
+    </div>
+
+    <!-- ORDER ENTRY -->
+    <div class="card" style="cursor:default;margin-bottom:4px;">
+      <div style="font-size:13px;color:#888;margin-bottom:10px;">New Order</div>
+
+      <input id="ptSymbol" class="tool-input" placeholder="Symbol — BTC, XRP, AAPL, TSLA..." style="text-transform:uppercase;" />
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div>
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">Order Type</div>
+          <select id="ptOrderType" class="dash-select" style="margin-bottom:0;" onchange="toggleOrderFields()">
+            <option value="market">Market</option>
+            <option value="limit">Limit Buy</option>
+            <option value="stop">Stop Loss</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">Quantity</div>
+          <input id="ptQty" class="tool-input" type="number" placeholder="Qty" style="margin-bottom:0;" />
+        </div>
+      </div>
+
+      <div id="ptLimitRow" style="display:none;margin-bottom:8px;">
+        <div style="font-size:11px;color:#888;margin-bottom:4px;">Limit Price ($)</div>
+        <input id="ptLimitPrice" class="tool-input" type="number" placeholder="e.g. 2.10" style="margin-bottom:0;" />
+      </div>
+      <div id="ptStopRow" style="display:none;margin-bottom:8px;">
+        <div style="font-size:11px;color:#888;margin-bottom:4px;">Stop Price ($)</div>
+        <input id="ptStopPrice" class="tool-input" type="number" placeholder="e.g. 1.80" style="margin-bottom:0;" />
+      </div>
+
+      <div id="ptLiveQuote" style="font-size:12px;color:#888;margin-bottom:10px;min-height:18px;"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button class="tool-btn tool-btn-green" onclick="placeOrder('buy')" style="width:100%;">Buy</button>
+        <button class="tool-btn tool-btn-red"   onclick="placeOrder('sell')" style="width:100%;">Sell</button>
+      </div>
+    </div>
+
+    <!-- SUB TABS -->
+    <div class="pt-tabs">
+      <div class="pt-tab ${activePTTab==='performance'?'active':''}" onclick="switchPTTab('performance')">Performance</div>
+      <div class="pt-tab ${activePTTab==='positions'?'active':''}"   onclick="switchPTTab('positions')">Positions</div>
+      <div class="pt-tab ${activePTTab==='orders'?'active':''}"      onclick="switchPTTab('orders')">Orders</div>
+    </div>
+
+    <div id="ptContent"></div>
+  `;
+
+  // live quote lookup as user types symbol
+  let quoteTimer = null;
+  document.getElementById("ptSymbol").addEventListener("input", () => {
+    clearTimeout(quoteTimer);
+    quoteTimer = setTimeout(fetchLiveQuote, 700);
+  });
+
+  renderPTTab();
 }
 
-document.addEventListener("click", (e) => {
-  if (e.target.closest("#dailyVerse")) nextVerse();
-});
+function toggleOrderFields() {
+  const type = document.getElementById("ptOrderType")?.value;
+  const lRow  = document.getElementById("ptLimitRow");
+  const sRow  = document.getElementById("ptStopRow");
+  if (!lRow || !sRow) return;
+  lRow.style.display = type === "limit" ? "block" : "none";
+  sRow.style.display = type === "stop"  ? "block" : "none";
+}
+
+async function fetchLiveQuote() {
+  const sym = document.getElementById("ptSymbol")?.value.trim();
+  const el  = document.getElementById("ptLiveQuote");
+  if (!sym || sym.length < 2 || !el) return;
+  el.textContent = "Looking up...";
+  try {
+    const r = await fetch(`/price/${sym.toLowerCase()}`);
+    const d = await r.json();
+    if (d.price) {
+      const color = d.change24h >= 0 ? "#00ff88" : "#ff4d4d";
+      el.innerHTML = `<span style="color:white;font-weight:bold;">$${formatPrice(d.price)}</span> <span style="color:${color}">${fmtPct(d.change24h)} today</span> <span style="color:#555;">(${d.type})</span>`;
+    } else {
+      el.textContent = "Symbol not found";
+    }
+  } catch { el.textContent = ""; }
+}
+
+function switchPTTab(tab) {
+  activePTTab = tab;
+  document.querySelectorAll(".pt-tab").forEach(t => {
+    t.classList.toggle("active", t.textContent.toLowerCase() === tab);
+  });
+  renderPTTab();
+}
+
+function renderPTTab() {
+  const el = document.getElementById("ptContent");
+  if (!el) return;
+  if (activePTTab === "performance") renderPTPerformance(el);
+  if (activePTTab === "positions")   renderPTPositions(el);
+  if (activePTTab === "orders")      renderPTOrders(el);
+}
+
+// ── PERFORMANCE TAB ────────────────────────────────────
+function renderPTPerformance(el) {
+  const totalValue   = calcPortfolioValue();
+  const netValue     = paperBalance + totalValue;
+  const totalPnl     = netValue - paperStartBalance;
+  const totalPnlPct  = paperStartBalance > 0 ? (totalPnl / paperStartBalance) * 100 : 0;
+  const dayPnl       = calcDayPnl();
+  const pnlColor     = totalPnl >= 0 ? "#00ff88" : "#ff4d4d";
+  const dayColor     = dayPnl  >= 0 ? "#00ff88" : "#ff4d4d";
+
+  el.innerHTML = `
+    <!-- NET VALUE -->
+    <div style="text-align:center;padding:16px 0 8px;">
+      <div style="font-size:12px;color:#888;margin-bottom:4px;">Net Account Value</div>
+      <div style="font-size:28px;font-weight:bold;">$${netValue.toFixed(2)}</div>
+      <div style="color:${pnlColor};font-size:14px;margin-top:4px;">${totalPnl >= 0?"+":""}$${totalPnl.toFixed(2)} (${fmtPct(totalPnlPct)}) Open P&L</div>
+    </div>
+
+    <!-- MINI CHART -->
+    <div class="perf-chart-wrap">
+      <canvas id="perfChart"></canvas>
+    </div>
+
+    <!-- STAT GRID -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Day's P&L</div>
+        <div class="stat-val" style="color:${dayColor};">${dayPnl>=0?"+":""}$${Math.abs(dayPnl).toFixed(2)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Market Value</div>
+        <div class="stat-val">$${totalValue.toFixed(2)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Buying Power</div>
+        <div class="stat-val">$${paperBalance.toFixed(2)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Positions</div>
+        <div class="stat-val">${paperPositions.length}</div>
+      </div>
+    </div>
+
+    <!-- POSITIONS SNAPSHOT -->
+    <div style="font-size:13px;color:#888;margin-bottom:8px;">My Positions (${paperPositions.length})</div>
+    ${paperPositions.length === 0
+      ? `<div style="color:#555;font-size:13px;padding:12px 0;">No open positions.</div>`
+      : paperPositions.map(p => positionCardHTML(p)).join("")
+    }
+  `;
+
+  drawPerfChart();
+}
+
+function drawPerfChart() {
+  const canvas = document.getElementById("perfChart");
+  if (!canvas || perfHistory.length < 2) return;
+  const ctx  = canvas.getContext("2d");
+  const W    = canvas.parentElement.clientWidth - 20;
+  const H    = 100;
+  canvas.width  = W;
+  canvas.height = H;
+
+  const vals = perfHistory.map(p => p.value);
+  const minV = Math.min(...vals);
+  const maxV = Math.max(...vals);
+  const range = maxV - minV || 1;
+
+  const toX = i => (i / (vals.length - 1)) * W;
+  const toY = v => H - ((v - minV) / range) * (H - 10) - 5;
+
+  const isUp    = vals[vals.length - 1] >= vals[0];
+  const lineClr = isUp ? "#00ff88" : "#ff4d4d";
+
+  ctx.clearRect(0, 0, W, H);
+
+  // fill
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, isUp ? "rgba(0,255,136,0.25)" : "rgba(255,77,77,0.25)");
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.beginPath();
+  ctx.moveTo(toX(0), toY(vals[0]));
+  vals.forEach((v, i) => { if (i > 0) ctx.lineTo(toX(i), toY(v)); });
+  ctx.lineTo(toX(vals.length - 1), H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // line
+  ctx.beginPath();
+  ctx.moveTo(toX(0), toY(vals[0]));
+  vals.forEach((v, i) => { if (i > 0) ctx.lineTo(toX(i), toY(v)); });
+  ctx.strokeStyle = lineClr;
+  ctx.lineWidth   = 2;
+  ctx.stroke();
+}
+
+// ── POSITIONS TAB ──────────────────────────────────────
+function renderPTPositions(el) {
+  if (paperPositions.length === 0) {
+    el.innerHTML = "<div style='color:#555;font-size:13px;padding:20px 0;text-align:center;'>No open positions.</div>";
+    return;
+  }
+  el.innerHTML = `<div style="font-size:12px;color:#888;margin-bottom:8px;">Live P&L updates every second</div>` +
+    paperPositions.map(p => positionCardHTML(p)).join("");
+}
+
+function positionCardHTML(p) {
+  const currentPrice = liveprices[p.symbol] || p.avgPrice;
+  const pnl          = (currentPrice - p.avgPrice) * p.qty * (p.side === "buy" ? 1 : -1);
+  const pnlPct       = p.avgPrice > 0 ? (pnl / (p.avgPrice * p.qty)) * 100 : 0;
+  const pnlColor     = pnl >= 0 ? "#00ff88" : "#ff4d4d";
+  const mktVal       = currentPrice * p.qty;
+
+  return `
+    <div class="pos-card" id="pos_${p.id}">
+      <div class="pos-header">
+        <div>
+          <span class="pos-symbol">${p.symbol}</span>
+          <span style="font-size:11px;color:#888;margin-left:8px;">${p.side.toUpperCase()}</span>
+        </div>
+        <div class="pos-pnl" style="color:${pnlColor};" id="pnl_${p.id}">${pnl>=0?"+":""}$${Math.abs(pnl).toFixed(2)} (${fmtPct(pnlPct)})</div>
+      </div>
+      <div class="pos-detail">
+        ${p.qty} shares · Avg $${formatPrice(p.avgPrice)} · Mkt $${formatPrice(currentPrice)} · Value $${mktVal.toFixed(2)}
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;">
+        <button class="tool-btn tool-btn-gray" style="flex:1;padding:8px;font-size:12px;" onclick="closePosition('${p.id}')">Close Position</button>
+      </div>
+    </div>`;
+}
+
+// ── ORDERS TAB ─────────────────────────────────────────
+function renderPTOrders(el) {
+  if (paperOrders.length === 0) {
+    el.innerHTML = "<div style='color:#555;font-size:13px;padding:20px 0;text-align:center;'>No orders yet.</div>";
+    return;
+  }
+  el.innerHTML = [...paperOrders].reverse().map(o => {
+    const badge = o.status === "filled"   ? "badge-filled" :
+                  o.status === "canceled" ? "badge-canceled" : "badge-pending";
+    const label = o.status === "filled"   ? "Filled" :
+                  o.status === "canceled" ? "Canceled" : "Pending";
+    const cancelBtn = o.status === "pending"
+      ? `<span onclick="cancelOrder('${o.id}')" style="color:#ff4d4d;font-size:12px;cursor:pointer;margin-left:8px;">Cancel</span>` : "";
+    return `
+      <div class="order-card">
+        <div class="order-info">
+          <div style="font-weight:bold;">${o.side.toUpperCase()} ${o.qty} ${o.symbol}</div>
+          <div style="color:#888;font-size:12px;">${o.type} · $${formatPrice(o.price || 0)} · ${new Date(o.ts).toLocaleTimeString()}</div>
+          ${cancelBtn}
+        </div>
+        <span class="order-badge ${badge}">${label}</span>
+      </div>`;
+  }).join("");
+}
+
+// ═══════════════════════════════════════════════════════
+// ── PAPER TRADING STATE ────────────────────────────────
+// ═══════════════════════════════════════════════════════
+
+let paperBalance      = parseFloat(localStorage.getItem("ptBalance") || "0");
+let paperStartBalance = parseFloat(localStorage.getItem("ptStartBalance") || "0");
+let paperPositions    = JSON.parse(localStorage.getItem("ptPositions") || "[]");
+let paperOrders       = JSON.parse(localStorage.getItem("ptOrders")    || "[]");
+let perfHistory       = JSON.parse(localStorage.getItem("ptHistory")   || "[]");
+let dayStartValue     = parseFloat(localStorage.getItem("ptDayStart")  || "0");
+const liveprices      = {};
+
+function savePT() {
+  localStorage.setItem("ptBalance",      paperBalance.toString());
+  localStorage.setItem("ptStartBalance", paperStartBalance.toString());
+  localStorage.setItem("ptPositions",    JSON.stringify(paperPositions));
+  localStorage.setItem("ptOrders",       JSON.stringify(paperOrders));
+  localStorage.setItem("ptHistory",      JSON.stringify(perfHistory));
+  localStorage.setItem("ptDayStart",     dayStartValue.toString());
+}
+
+function confirmSetup() {
+  const val = parseFloat(document.getElementById("setupBalance").value);
+  if (!val || val <= 0) return;
+  paperBalance      = val;
+  paperStartBalance = val;
+  dayStartValue     = val;
+  perfHistory       = [{ value: val, ts: Date.now() }];
+  savePT();
+  document.getElementById("setupModal").style.display = "none";
+}
+
+function resetPaperTrading() {
+  if (!confirm("Reset all paper trading data?")) return;
+  localStorage.removeItem("ptBalance");
+  localStorage.removeItem("ptStartBalance");
+  localStorage.removeItem("ptPositions");
+  localStorage.removeItem("ptOrders");
+  localStorage.removeItem("ptHistory");
+  localStorage.removeItem("ptDayStart");
+  paperBalance      = 0;
+  paperStartBalance = 0;
+  paperPositions    = [];
+  paperOrders       = [];
+  perfHistory       = [];
+  dayStartValue     = 0;
+  document.getElementById("setupModal").style.display = "flex";
+}
+
+function calcPortfolioValue() {
+  return paperPositions.reduce((sum, p) => {
+    const price = liveprices[p.symbol] || p.avgPrice;
+    return sum + price * p.qty;
+  }, 0);
+}
+
+function calcDayPnl() {
+  const current = paperBalance + calcPortfolioValue();
+  return current - dayStartValue;
+}
+
+// ── ORDER PLACEMENT ────────────────────────────────────
+async function placeOrder(side) {
+  const symRaw  = document.getElementById("ptSymbol")?.value.trim().toUpperCase();
+  const qty     = parseFloat(document.getElementById("ptQty")?.value);
+  const type    = document.getElementById("ptOrderType")?.value || "market";
+
+  if (!symRaw || !qty || qty <= 0) {
+    alert("Enter a symbol and quantity.");
+    return;
+  }
+
+  const limitPrice = parseFloat(document.getElementById("ptLimitPrice")?.value) || 0;
+  const stopPrice  = parseFloat(document.getElementById("ptStopPrice")?.value)  || 0;
+
+  // fetch current price
+  let price = liveprices[symRaw];
+  if (!price) {
+    try {
+      const r = await fetch(`/price/${symRaw.toLowerCase()}`);
+      const d = await r.json();
+      if (!d.price) { alert("Could not fetch price for " + symRaw); return; }
+      price = d.price;
+      liveprices[symRaw] = price;
+    } catch { alert("Price lookup failed."); return; }
+  }
+
+  const order = {
+    id: Date.now().toString(),
+    symbol: symRaw, side, qty, type,
+    price: type === "market" ? price : (type === "limit" ? limitPrice : stopPrice),
+    marketPrice: price,
+    status: type === "market" ? "filled" : "pending",
+    ts: Date.now()
+  };
+
+  paperOrders.push(order);
+
+  if (type === "market") {
+    executeOrder(order, price);
+  } else {
+    // pending orders will be checked in the live P&L loop
+  }
+
+  savePT();
+  renderTools();
+}
+
+function executeOrder(order, execPrice) {
+  const cost = execPrice * order.qty;
+
+  if (order.side === "buy") {
+    if (cost > paperBalance) { alert("Insufficient buying power!"); order.status = "canceled"; return; }
+    paperBalance -= cost;
+
+    const existing = paperPositions.find(p => p.symbol === order.symbol && p.side === "buy");
+    if (existing) {
+      const totalQty    = existing.qty + order.qty;
+      existing.avgPrice = ((existing.avgPrice * existing.qty) + (execPrice * order.qty)) / totalQty;
+      existing.qty      = totalQty;
+    } else {
+      paperPositions.push({ id: Date.now().toString(), symbol: order.symbol, side: "buy", qty: order.qty, avgPrice: execPrice });
+    }
+  } else {
+    const pos = paperPositions.find(p => p.symbol === order.symbol && p.side === "buy");
+    if (!pos || pos.qty < order.qty) { alert("Not enough shares to sell!"); order.status = "canceled"; return; }
+    paperBalance += execPrice * order.qty;
+    pos.qty -= order.qty;
+    if (pos.qty <= 0) paperPositions = paperPositions.filter(p => p.id !== pos.id);
+  }
+
+  order.status     = "filled";
+  order.execPrice  = execPrice;
+  recordPerfSnapshot();
+}
+
+function closePosition(posId) {
+  const pos = paperPositions.find(p => p.id === posId);
+  if (!pos) return;
+  const price = liveprices[pos.symbol] || pos.avgPrice;
+  paperBalance += price * pos.qty;
+  paperPositions = paperPositions.filter(p => p.id !== posId);
+  paperOrders.push({ id: Date.now().toString(), symbol: pos.symbol, side: "sell", qty: pos.qty, type: "market", price, status: "filled", ts: Date.now() });
+  recordPerfSnapshot();
+  savePT();
+  renderTools();
+}
+
+function cancelOrder(orderId) {
+  const o = paperOrders.find(o => o.id === orderId);
+  if (o) o.status = "canceled";
+  savePT();
+  renderPTOrders(document.getElementById("ptContent"));
+}
+
+function recordPerfSnapshot() {
+  const netVal = paperBalance + calcPortfolioValue();
+  perfHistory.push({ value: netVal, ts: Date.now() });
+  if (perfHistory.length > 200) perfHistory.shift();
+}
+
+// ── CHECK PENDING ORDERS ───────────────────────────────
+function checkPendingOrders() {
+  let changed = false;
+  paperOrders.filter(o => o.status === "pending").forEach(o => {
+    const current = liveprices[o.symbol];
+    if (!current) return;
+    let shouldFill = false;
+    if (o.type === "limit" && o.side === "buy"  && current <= o.price) shouldFill = true;
+    if (o.type === "limit" && o.side === "sell" && current >= o.price) shouldFill = true;
+    if (o.type === "stop"  && current <= o.price) shouldFill = true;
+    if (shouldFill) { executeOrder(o, current); changed = true; }
+  });
+  if (changed) { savePT(); if (document.getElementById("tools").style.display !== "none") renderTools(); }
+}
+
+// ── LIVE P&L LOOP (every second) ──────────────────────
+async function livePnlLoop() {
+  if (paperPositions.length === 0) return;
+  const symbols = [...new Set(paperPositions.map(p => p.symbol))];
+  for (const sym of symbols) {
+    try {
+      const r = await fetch(`/price/${sym.toLowerCase()}`);
+      const d = await r.json();
+      if (d.price) liveprices[sym] = d.price;
+    } catch {}
+  }
+  checkPendingOrders();
+
+  // Update P&L in DOM without full re-render
+  if (document.getElementById("tools").style.display !== "none") {
+    paperPositions.forEach(p => {
+      const pnlEl = document.getElementById(`pnl_${p.id}`);
+      if (!pnlEl) return;
+      const currentPrice = liveprices[p.symbol] || p.avgPrice;
+      const pnl    = (currentPrice - p.avgPrice) * p.qty * (p.side === "buy" ? 1 : -1);
+      const pnlPct = p.avgPrice > 0 ? (pnl / (p.avgPrice * p.qty)) * 100 : 0;
+      pnlEl.style.color   = pnl >= 0 ? "#00ff88" : "#ff4d4d";
+      pnlEl.textContent   = `${pnl>=0?"+":""}$${Math.abs(pnl).toFixed(2)} (${fmtPct(pnlPct)})`;
+    });
+
+    // update balance display
+    const balEl = document.getElementById("ptBalanceDisplay");
+    if (balEl) balEl.textContent = "$" + paperBalance.toFixed(2);
+  }
+}
 
 // ── INIT ───────────────────────────────────────────────
-
 startTicker();
 loadMarket();
 loadFear();
@@ -1338,9 +1068,16 @@ loadCryptoNews();
 loadStockNews();
 loadVerse();
 loadAiInsight();
-setupCalculator();
-renderPortfolio();
 
+// Show setup modal if no balance set
+if (paperBalance <= 0) {
+  document.getElementById("setupModal").style.display = "flex";
+}
+
+// Live P&L every second
+setInterval(livePnlLoop, 1000);
+
+// Refresh market data every 60s
 setInterval(() => {
   loadCrypto();
   loadMarket();
@@ -1348,6 +1085,12 @@ setInterval(() => {
   loadStockNews();
   loadAiInsight();
 }, 60000);
+
+// Record performance snapshot every 5 min
+setInterval(() => {
+  if (paperBalance > 0) recordPerfSnapshot();
+  savePT();
+}, 300000);
 
 </script>
 
